@@ -1,15 +1,15 @@
-EsteIt\PackageDeliveryCalculator\Calculator\Asendia\RecipientCountry:
+EsteIt\ShippingCalculator\Calculator\Asendia\RecipientCountry:
   recipient_country_usa:
     code: USA
     priceGroup: 1
     weightLimit: 40
 
-EsteIt\PackageDeliveryCalculator\Calculator\Asendia\PriceGroup:
+EsteIt\ShippingCalculator\Calculator\Asendia\PriceGroup:
   price_group_1_1:
     name: 1
     setPrice: [10, 21.40]
 
-EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff:
+EsteIt\ShippingCalculator\Calculator\Asendia\Tariff:
   tariff_1:
     date: <(new DateTime())>
     fuelSubcharge: 0.07
@@ -51,11 +51,11 @@ EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff:
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
 
-EsteIt\PackageDeliveryCalculator\Address\BaseAddress:
+EsteIt\ShippingCalculator\Address\BaseAddress:
   base_address_usa:
     countryCode: USA
 
-EsteIt\PackageDeliveryCalculator\Package\BasePackage:
+EsteIt\ShippingCalculator\Package\BasePackage:
   base_package_1:
     calculationDate: <(new DateTime())>
     weight: 10

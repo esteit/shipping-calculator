@@ -1,9 +1,9 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Calculator\Asendia;
+namespace EsteIt\ShippingCalculator\Calculator\Asendia;
 
-use EsteIt\PackageDeliveryCalculator\Exception\InvalidArgumentException;
-use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
+use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
+use EsteIt\ShippingCalculator\Exception\LogicException;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\Native;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Calculator\Asendia;
+namespace EsteIt\ShippingCalculator\Calculator\Asendia;
 
 /**
  * Class RecipientCountry

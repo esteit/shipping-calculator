@@ -1,13 +1,13 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator;
+namespace EsteIt\ShippingCalculator;
 
-use EsteIt\PackageDeliveryCalculator\Calculator\CalculatorInterface;
-use EsteIt\PackageDeliveryCalculator\Event\AfterCalculateEvent;
-use EsteIt\PackageDeliveryCalculator\Event\BeforeCalculateEvent;
-use EsteIt\PackageDeliveryCalculator\Event\Events;
-use EsteIt\PackageDeliveryCalculator\Exception\InvalidArgumentException;
-use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Calculator\CalculatorInterface;
+use EsteIt\ShippingCalculator\Event\AfterCalculateEvent;
+use EsteIt\ShippingCalculator\Event\BeforeCalculateEvent;
+use EsteIt\ShippingCalculator\Event\Events;
+use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
+use EsteIt\ShippingCalculator\Package\PackageInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -27,7 +27,7 @@ class PackageDeliveryCalculationService
     protected $dispatcher;
 
     /**
-     * PackageDeliveryCalculator constructor.
+     * ShippingCalculator constructor.
      * @param EventDispatcherInterface $dispatcher
      */
     public function __construct(EventDispatcherInterface $dispatcher = null)

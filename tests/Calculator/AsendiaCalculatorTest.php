@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Tests\Calculator;
+namespace EsteIt\ShippingCalculator\Tests\Calculator;
 
-use EsteIt\PackageDeliveryCalculator\Calculator\AsendiaCalculator;
+use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
 
 /**
  * @group unit
@@ -35,7 +35,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $now = new \DateTime();
         $tariff = $calculator->getTariff($now);
-        $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff', $tariff);
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\Calculator\Asendia\Tariff', $tariff);
 
         $this->assertLessThanOrEqual($now, $tariff->getDate());
         $this->assertEquals('0.07', $tariff->getFuelSubcharge());
@@ -60,7 +60,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $result = $deliveryMethod->calculate($package);
 
-        $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\CalculationResult', $result);
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculationResult', $result);
         $this->assertSame('22.10', $result->getTotalCost());
         $this->assertSame($deliveryMethod, $result->getCalculator());
         $this->assertSame($package, $result->getPackage());
@@ -110,7 +110,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [
-                'EsteIt\PackageDeliveryCalculator\Exception\LogicException',
+                'EsteIt\ShippingCalculator\Exception\LogicException',
                 'Tariff was not found.',
             ],
         ];

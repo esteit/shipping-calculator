@@ -1,10 +1,10 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Calculator\Asendia;
+namespace EsteIt\ShippingCalculator\Calculator\Asendia;
 
-use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
-use EsteIt\PackageDeliveryCalculator\Exception\UnsuitableDeliveryMethodException;
-use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Exception\LogicException;
+use EsteIt\ShippingCalculator\Exception\UnsuitableDeliveryMethodException;
+use EsteIt\ShippingCalculator\Package\PackageInterface;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\Native;
 

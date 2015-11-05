@@ -1,11 +1,11 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Calculator;
+namespace EsteIt\ShippingCalculator\Calculator;
 
-use EsteIt\PackageDeliveryCalculator\CalculationResult;
-use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff;
-use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
-use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\CalculationResult;
+use EsteIt\ShippingCalculator\Calculator\Asendia\Tariff;
+use EsteIt\ShippingCalculator\Exception\LogicException;
+use EsteIt\ShippingCalculator\Package\PackageInterface;
 
 /**
  * Class AsendiaCalculator

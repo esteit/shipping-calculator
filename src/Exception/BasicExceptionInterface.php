@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Exception;
+namespace EsteIt\ShippingCalculator\Exception;
 
 /**
  * Class BasicExceptionInterface

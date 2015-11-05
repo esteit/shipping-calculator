@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Package;
+namespace EsteIt\ShippingCalculator\Package;
 
-use EsteIt\PackageDeliveryCalculator\Address\AddressInterface;
+use EsteIt\ShippingCalculator\Address\AddressInterface;
 
 /**
  * Interface PackageInterface

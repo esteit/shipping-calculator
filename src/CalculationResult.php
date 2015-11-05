@@ -1,9 +1,9 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator;
+namespace EsteIt\ShippingCalculator;
 
-use EsteIt\PackageDeliveryCalculator\Calculator\CalculatorInterface;
-use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Calculator\CalculatorInterface;
+use EsteIt\ShippingCalculator\Package\PackageInterface;
 
 /**
  * Class CalculationResult

@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Event;
+namespace EsteIt\ShippingCalculator\Event;
 
 /**
  * Class Events

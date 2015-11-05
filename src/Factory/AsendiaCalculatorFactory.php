@@ -1,12 +1,12 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Factory;
+namespace EsteIt\ShippingCalculator\Factory;
 
-use EsteIt\PackageDeliveryCalculator\Configuration\AsendiaConfiguration;
-use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\PriceGroup;
-use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\RecipientCountry;
-use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff;
-use EsteIt\PackageDeliveryCalculator\Calculator\AsendiaCalculator;
+use EsteIt\ShippingCalculator\Configuration\AsendiaConfiguration;
+use EsteIt\ShippingCalculator\Calculator\Asendia\PriceGroup;
+use EsteIt\ShippingCalculator\Calculator\Asendia\RecipientCountry;
+use EsteIt\ShippingCalculator\Calculator\Asendia\Tariff;
+use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
 use Symfony\Component\Config\Definition\Processor;
 
 /**

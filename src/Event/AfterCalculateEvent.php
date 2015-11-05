@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Event;
+namespace EsteIt\ShippingCalculator\Event;
 
-use EsteIt\PackageDeliveryCalculator\CalculationResult;
+use EsteIt\ShippingCalculator\CalculationResult;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
