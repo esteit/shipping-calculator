@@ -6,7 +6,6 @@ use EsteIt\PackageDeliveryCalculator\CalculationResult;
 use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff;
 use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
 use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * Class AsendiaCalculator
