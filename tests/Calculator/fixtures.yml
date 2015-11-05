@@ -16,7 +16,7 @@ EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff:
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
   tariff_2:
-    date: <(new DateTime("1 DAY"))>
+    date: <(new DateTime("-1 DAY"))>
     fuelSubcharge: 0.07
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]

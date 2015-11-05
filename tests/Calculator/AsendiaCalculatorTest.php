@@ -28,12 +28,13 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideGetTariff
      */
-    public function testGetTariff($options)
+    public function testGetTariff($tariffs)
     {
-        $method = new AsendiaCalculator($options);
+        $calculator = new AsendiaCalculator();
+        $calculator->addTariffs($tariffs);
 
         $now = new \DateTime();
-        $tariff = $method->getTariff($now);
+        $tariff = $calculator->getTariff($now);
         $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff', $tariff);
 
         $this->assertLessThanOrEqual($now, $tariff->getDate());
@@ -47,8 +48,8 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException($exceptionClass, $exceptionMessage);
 
-        $method = new AsendiaCalculator();
-        $method->getTariff(new \DateTime());
+        $calculator = new AsendiaCalculator();
+        $calculator->getTariff(new \DateTime());
     }
 
     public function testCalculate()
@@ -71,34 +72,32 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     public function provideGetTariff()
     {
         return [
+            // One tariff
             [
-                // One tariff
                 [
-                    'tariffs' => [
-                        $this->getFixture('tariff_1'),
-                    ],
+                    $this->getFixture('tariff_1'),
                 ],
-                // Two tariffs with one date
+            ],
+            // Two tariffs with one date
+            [
                 [
-                    'tariffs' => [
-                        $this->getFixture('tariff_2'),
-                        $this->getFixture('tariff_3'),
-                    ],
+                    $this->getFixture('tariff_2'),
+                    $this->getFixture('tariff_3'),
                 ],
-                // Two tariffs with different dates
+            ],
+            // Two tariffs with different dates
+            [
                 [
-                    'tariffs' => [
-                        $this->getFixture('tariff_4'),
-                        $this->getFixture('tariff_5'),
-                    ],
+                    $this->getFixture('tariff_4'),
+                    $this->getFixture('tariff_5'),
                 ],
-                // Three tariffs with different dates
+            ],
+            // Three tariffs with different dates
+            [
                 [
-                    'tariffs' => [
-                        $this->getFixture('tariff_6'),
-                        $this->getFixture('tariff_7'),
-                        $this->getFixture('tariff_8'),
-                    ],
+                    $this->getFixture('tariff_6'),
+                    $this->getFixture('tariff_7'),
+                    $this->getFixture('tariff_8'),
                 ],
             ],
         ];

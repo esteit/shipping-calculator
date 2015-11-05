@@ -18,17 +18,9 @@ class AsendiaCalculator implements CalculatorInterface
      */
     protected $tariffs;
 
-    /**
-     * @param array $options
-     */
-    public function __construct(array $options = [])
+    public function __construct()
     {
-        $options = $this->resolveConstructOptions($options);
-
         $this->tariffs = [];
-        foreach ($options['tariffs'] as $tariff) {
-            $this->addTariff($tariff);
-        }
     }
 
     /**
@@ -93,21 +85,5 @@ class AsendiaCalculator implements CalculatorInterface
         }
 
         return $currentTariff;
-    }
-
-    protected function resolveConstructOptions(array $options)
-    {
-        $resolver = new OptionsResolver();
-        $resolver->setRequired([
-            'tariffs',
-        ]);
-        $resolver->setDefaults([
-            'tariffs' => [],
-        ]);
-        $resolver->setAllowedTypes([
-            'tariffs' => ['array'],
-        ]);
-
-        return $resolver->resolve($options);
     }
 }
