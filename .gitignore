@@ -1,7 +1,7 @@
-vendor/
-.idea/
-.build/
+vendor
+.idea
+.build
 composer.lock
 phpunit.xml
-bin/
-scripts/
+bin
+scripts
