@@ -12,9 +12,9 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Class PackageDeliveryCalculationService
+ * Class ShippingCalculationService
  */
-class PackageDeliveryCalculationService
+class ShippingCalculationService
 {
     /**
      * @var CalculatorInterface[]

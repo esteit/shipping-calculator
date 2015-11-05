@@ -4,25 +4,25 @@ namespace EsteIt\ShippingCalculator\Tests\Calculator;
 
 use EsteIt\ShippingCalculator\CalculationResult;
 use EsteIt\ShippingCalculator\Event\Events;
-use EsteIt\ShippingCalculator\PackageDeliveryCalculationService;
+use EsteIt\ShippingCalculator\ShippingCalculationService;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * @group unit
  */
-class PackageDeliveryCalculationServiceTest extends \PHPUnit_Framework_TestCase
+class ShippingCalculationServiceTest extends \PHPUnit_Framework_TestCase
 {
     public function testGetDispatcher()
     {
         $dispatcher = new EventDispatcher();
-        $calculator = new PackageDeliveryCalculationService($dispatcher);
+        $calculator = new ShippingCalculationService($dispatcher);
 
         $this->assertSame($dispatcher, $calculator->getDispatcher());
     }
 
     public function testAddCalculator()
     {
-        $calculator = new PackageDeliveryCalculationService();
+        $calculator = new ShippingCalculationService();
         $mock = \Mockery::mock('EsteIt\ShippingCalculator\Calculator\CalculatorInterface');
         $calculator->addCalculator('test', $mock);
 
@@ -32,13 +32,13 @@ class PackageDeliveryCalculationServiceTest extends \PHPUnit_Framework_TestCase
     public function testGetCalculatorException()
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidArgumentException', 'Delivery method was not found.');
-        $calculator = new PackageDeliveryCalculationService();
+        $calculator = new ShippingCalculationService();
         $calculator->getCalculator('test');
     }
 
     public function testCalculate()
     {
-        $service = new PackageDeliveryCalculationService();
+        $service = new ShippingCalculationService();
         $result = new CalculationResult();
 
         $package = \Mockery::mock('EsteIt\ShippingCalculator\Package\PackageInterface');
