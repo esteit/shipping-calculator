@@ -1,0 +1,31 @@
+{
+    "name": "ragephp/package-delivery-calculator",
+    "license": "MIT",
+    "type": "library",
+    "description": "Package delivery calculation library based on Symfony 2 components.",
+    "autoload": {
+        "psr-4": {
+            "Rage\\PackageDeliveryCalculator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Rage\\PackageDeliveryCalculator\\Test\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=5.4",
+        "symfony/event-dispatcher": "~2.7",
+        "symfony/options-resolver": "~2.7",
+        "symfony/config": "~2.7",
+        "moriony/trivial": "~0.1"
+    },
+    "require-dev": {
+        "mockery/mockery": "~0.9",
+        "phpunit/phpunit": "~4.0",
+        "nelmio/alice": "~2.1"
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}
