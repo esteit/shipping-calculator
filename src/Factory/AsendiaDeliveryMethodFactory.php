@@ -1,12 +1,12 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Factory;
+namespace EsteIt\PackageDeliveryCalculator\Factory;
 
-use Rage\PackageDeliveryCalculator\Configuration\AsendiaConfiguration;
-use Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia\PriceGroup;
-use Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia\RecipientCountry;
-use Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff;
-use Rage\PackageDeliveryCalculator\DeliveryMethod\AsendiaDeliveryMethod;
+use EsteIt\PackageDeliveryCalculator\Configuration\AsendiaConfiguration;
+use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\PriceGroup;
+use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\RecipientCountry;
+use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff;
+use EsteIt\PackageDeliveryCalculator\DeliveryMethod\AsendiaDeliveryMethod;
 use Symfony\Component\Config\Definition\Processor;
 
 /**

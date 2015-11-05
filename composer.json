@@ -1,16 +1,16 @@
 {
-    "name": "ragephp/package-delivery-calculator",
+    "name": "esteit/package-delivery-calculator",
     "license": "MIT",
     "type": "library",
     "description": "Package delivery calculation library based on Symfony 2 components.",
     "autoload": {
         "psr-4": {
-            "Rage\\PackageDeliveryCalculator\\": "src/"
+            "EsteIt\\PackageDeliveryCalculator\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Rage\\PackageDeliveryCalculator\\Test\\": "tests/"
+            "EsteIt\\PackageDeliveryCalculator\\Test\\": "tests/"
         }
     },
     "require": {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia;
+namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia;
 
 /**
  * Class RecipientCountry

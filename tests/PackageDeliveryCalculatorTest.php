@@ -1,10 +1,10 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Tests\DeliveryMethod;
+namespace EsteIt\PackageDeliveryCalculator\Tests\DeliveryMethod;
 
-use Rage\PackageDeliveryCalculator\CalculationResult;
-use Rage\PackageDeliveryCalculator\Event\Events;
-use Rage\PackageDeliveryCalculator\PackageDeliveryCalculator;
+use EsteIt\PackageDeliveryCalculator\CalculationResult;
+use EsteIt\PackageDeliveryCalculator\Event\Events;
+use EsteIt\PackageDeliveryCalculator\PackageDeliveryCalculator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
@@ -23,7 +23,7 @@ class PackageDeliveryCalculatorTest extends \PHPUnit_Framework_TestCase
     public function testAddDeliveryMethod()
     {
         $calculator = new PackageDeliveryCalculator();
-        $mock = \Mockery::mock('Rage\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface');
+        $mock = \Mockery::mock('EsteIt\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface');
         $calculator->addDeliveryMethod('test', $mock);
 
         $this->assertSame($calculator->getDeliveryMethod('test'), $mock);
@@ -31,7 +31,7 @@ class PackageDeliveryCalculatorTest extends \PHPUnit_Framework_TestCase
 
     public function testGetDeliveryMethodException()
     {
-        $this->setExpectedException('Rage\PackageDeliveryCalculator\Exception\InvalidArgumentException', 'Delivery method was not found.');
+        $this->setExpectedException('EsteIt\PackageDeliveryCalculator\Exception\InvalidArgumentException', 'Delivery method was not found.');
         $calculator = new PackageDeliveryCalculator();
         $calculator->getDeliveryMethod('test');
     }
@@ -41,21 +41,21 @@ class PackageDeliveryCalculatorTest extends \PHPUnit_Framework_TestCase
         $calculator = new PackageDeliveryCalculator();
         $result = new CalculationResult();
 
-        $package = \Mockery::mock('Rage\PackageDeliveryCalculator\Package\PackageInterface');
-        $deliveryMethod = \Mockery::mock('Rage\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface')
+        $package = \Mockery::mock('EsteIt\PackageDeliveryCalculator\Package\PackageInterface');
+        $deliveryMethod = \Mockery::mock('EsteIt\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface')
             ->shouldReceive('calculate')
             ->once()
             ->andReturn($result)
             ->getMock();
 
         $calculator->getDispatcher()->addListener(Events::BEFORE_CALCULATE, function ($event) use($package, $deliveryMethod) {
-            $this->assertInstanceOf('Rage\PackageDeliveryCalculator\Event\BeforeCalculateEvent', $event);
+            $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\Event\BeforeCalculateEvent', $event);
             $this->assertSame($package, $event->getPackage());
             $this->assertSame($deliveryMethod, $event->getDeliveryMethod());
         });
 
         $calculator->getDispatcher()->addListener(Events::AFTER_CALCULATE, function ($event) use($result) {
-            $this->assertInstanceOf('Rage\PackageDeliveryCalculator\Event\AfterCalculateEvent', $event);
+            $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\Event\AfterCalculateEvent', $event);
             $this->assertSame($result, $event->getResult());
         });
 

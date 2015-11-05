@@ -1,10 +1,10 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia;
+namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia;
 
-use Rage\PackageDeliveryCalculator\Exception\LogicException;
-use Rage\PackageDeliveryCalculator\Exception\UnsuitableDeliveryMethodException;
-use Rage\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
+use EsteIt\PackageDeliveryCalculator\Exception\UnsuitableDeliveryMethodException;
+use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\Native;
 

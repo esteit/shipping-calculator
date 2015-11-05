@@ -1,13 +1,13 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator;
+namespace EsteIt\PackageDeliveryCalculator;
 
-use Rage\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface;
-use Rage\PackageDeliveryCalculator\Event\AfterCalculateEvent;
-use Rage\PackageDeliveryCalculator\Event\BeforeCalculateEvent;
-use Rage\PackageDeliveryCalculator\Event\Events;
-use Rage\PackageDeliveryCalculator\Exception\InvalidArgumentException;
-use Rage\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface;
+use EsteIt\PackageDeliveryCalculator\Event\AfterCalculateEvent;
+use EsteIt\PackageDeliveryCalculator\Event\BeforeCalculateEvent;
+use EsteIt\PackageDeliveryCalculator\Event\Events;
+use EsteIt\PackageDeliveryCalculator\Exception\InvalidArgumentException;
+use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Configuration;
+namespace EsteIt\PackageDeliveryCalculator\Configuration;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;

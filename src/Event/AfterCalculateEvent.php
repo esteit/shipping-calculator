@@ -1,8 +1,8 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Event;
+namespace EsteIt\PackageDeliveryCalculator\Event;
 
-use Rage\PackageDeliveryCalculator\CalculationResult;
+use EsteIt\PackageDeliveryCalculator\CalculationResult;
 use Symfony\Component\EventDispatcher\Event;
 
 /**

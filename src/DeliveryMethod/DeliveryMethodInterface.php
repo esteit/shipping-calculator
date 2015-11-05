@@ -1,9 +1,9 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\DeliveryMethod;
+namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod;
 
-use Rage\PackageDeliveryCalculator\CalculationResult;
-use Rage\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\PackageDeliveryCalculator\CalculationResult;
+use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 
 /**
  * Interface DeliveryMethodInterface

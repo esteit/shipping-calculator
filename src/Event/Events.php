@@ -1,6 +1,6 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Event;
+namespace EsteIt\PackageDeliveryCalculator\Event;
 
 /**
  * Class Events

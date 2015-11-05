@@ -1,8 +1,8 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Package;
+namespace EsteIt\PackageDeliveryCalculator\Package;
 
-use Rage\PackageDeliveryCalculator\Address\AddressInterface;
+use EsteIt\PackageDeliveryCalculator\Address\AddressInterface;
 
 /**
  * Class BasePackage

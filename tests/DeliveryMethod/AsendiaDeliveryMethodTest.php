@@ -1,8 +1,8 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Tests\DeliveryMethod;
+namespace EsteIt\PackageDeliveryCalculator\Tests\DeliveryMethod;
 
-use Rage\PackageDeliveryCalculator\DeliveryMethod\AsendiaDeliveryMethod;
+use EsteIt\PackageDeliveryCalculator\DeliveryMethod\AsendiaDeliveryMethod;
 
 /**
  * @group unit
@@ -34,7 +34,7 @@ class AsendiaDeliveryMethodTest extends \PHPUnit_Framework_TestCase
 
         $now = new \DateTime();
         $tariff = $method->getTariff($now);
-        $this->assertInstanceOf('Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff', $tariff);
+        $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff', $tariff);
 
         $this->assertLessThanOrEqual($now, $tariff->getDate());
         $this->assertEquals('0.07', $tariff->getFuelSubcharge());
@@ -59,7 +59,7 @@ class AsendiaDeliveryMethodTest extends \PHPUnit_Framework_TestCase
 
         $result = $deliveryMethod->calculate($package);
 
-        $this->assertInstanceOf('Rage\PackageDeliveryCalculator\CalculationResult', $result);
+        $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\CalculationResult', $result);
         $this->assertSame('22.10', $result->getTotalCost());
         $this->assertSame($deliveryMethod, $result->getDeliveryMethod());
         $this->assertSame($package, $result->getPackage());
@@ -111,7 +111,7 @@ class AsendiaDeliveryMethodTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [
-                'Rage\PackageDeliveryCalculator\Exception\LogicException',
+                'EsteIt\PackageDeliveryCalculator\Exception\LogicException',
                 'Tariff was not found.',
             ],
         ];

@@ -1,9 +1,9 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia;
+namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia;
 
-use Rage\PackageDeliveryCalculator\Exception\InvalidArgumentException;
-use Rage\PackageDeliveryCalculator\Exception\LogicException;
+use EsteIt\PackageDeliveryCalculator\Exception\InvalidArgumentException;
+use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\Native;
 

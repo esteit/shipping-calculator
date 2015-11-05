@@ -1,12 +1,12 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\DeliveryMethod;
+namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod;
 
-use Rage\PackageDeliveryCalculator\CalculationResult;
-use Rage\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff;
-use Rage\PackageDeliveryCalculator\Exception\InvalidArgumentException;
-use Rage\PackageDeliveryCalculator\Exception\LogicException;
-use Rage\PackageDeliveryCalculator\Package\PackageInterface;
+use EsteIt\PackageDeliveryCalculator\CalculationResult;
+use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff;
+use EsteIt\PackageDeliveryCalculator\Exception\InvalidArgumentException;
+use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
+use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**

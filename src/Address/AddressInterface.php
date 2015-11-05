@@ -1,6 +1,6 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Address;
+namespace EsteIt\PackageDeliveryCalculator\Address;
 
 /**
  * Interface AddressInterface

@@ -1,6 +1,6 @@
 <?php
 
-namespace Rage\PackageDeliveryCalculator\Exception;
+namespace EsteIt\PackageDeliveryCalculator\Exception;
 
 /**
  * Class RuntimeException
