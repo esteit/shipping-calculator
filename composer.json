@@ -2,7 +2,7 @@
     "name": "shiptor/shipping-calculator",
     "license": "MIT",
     "type": "library",
-    "description": "Package delivery calculation library based on Symfony 2 components.",
+    "description": "Shipping calculation library based on Symfony 2 components.",
     "autoload": {
         "psr-4": {
             "EsteIt\\ShippingCalculator\\": "src/"
