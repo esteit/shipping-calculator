@@ -2,7 +2,7 @@
 
 namespace EsteIt\PackageDeliveryCalculator;
 
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface;
+use EsteIt\PackageDeliveryCalculator\Calculator\CalculatorInterface;
 use EsteIt\PackageDeliveryCalculator\Event\AfterCalculateEvent;
 use EsteIt\PackageDeliveryCalculator\Event\BeforeCalculateEvent;
 use EsteIt\PackageDeliveryCalculator\Event\Events;
@@ -12,14 +12,14 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Class PackageDeliveryCalculator
+ * Class PackageDeliveryCalculationService
  */
-class PackageDeliveryCalculator
+class PackageDeliveryCalculationService
 {
     /**
-     * @var DeliveryMethodInterface[]
+     * @var CalculatorInterface[]
      */
-    protected $deliveryMethods;
+    protected $calculators;
 
     /**
      * @var EventDispatcherInterface
@@ -32,7 +32,7 @@ class PackageDeliveryCalculator
      */
     public function __construct(EventDispatcherInterface $dispatcher = null)
     {
-        $this->deliveryMethods = [];
+        $this->calculators = [];
 
         if (is_null($dispatcher)) {
             $dispatcher = new EventDispatcher();
@@ -50,27 +50,27 @@ class PackageDeliveryCalculator
 
     /**
      * @param string                  $name
-     * @param DeliveryMethodInterface $deliveryMethod
+     * @param CalculatorInterface $calculator
      * @return $this
      */
-    public function addDeliveryMethod($name, DeliveryMethodInterface $deliveryMethod)
+    public function addCalculator($name, CalculatorInterface $calculator)
     {
-        $this->deliveryMethods[$name] = $deliveryMethod;
+        $this->calculators[$name] = $calculator;
 
         return $this;
     }
 
     /**
      * @param string $name
-     * @return DeliveryMethodInterface
+     * @return CalculatorInterface
      */
-    public function getDeliveryMethod($name)
+    public function getCalculator($name)
     {
-        if (!array_key_exists($name, $this->deliveryMethods)) {
+        if (!array_key_exists($name, $this->calculators)) {
             throw new InvalidArgumentException('Delivery method was not found.');
         }
 
-        return $this->deliveryMethods[$name];
+        return $this->calculators[$name];
     }
 
     /**
@@ -80,9 +80,9 @@ class PackageDeliveryCalculator
     public function calculate(PackageInterface $package)
     {
         $results = [];
-        foreach ($this->deliveryMethods as $deliveryMethod) {
-            $this->dispatcher->dispatch(Events::BEFORE_CALCULATE, new BeforeCalculateEvent($deliveryMethod, $package));
-            $result = $deliveryMethod->calculate($package);
+        foreach ($this->calculators as $calculator) {
+            $this->dispatcher->dispatch(Events::BEFORE_CALCULATE, new BeforeCalculateEvent($calculator, $package));
+            $result = $calculator->calculate($package);
             $this->dispatcher->dispatch(Events::AFTER_CALCULATE, new AfterCalculateEvent($result));
             $results[] = $result;
         }

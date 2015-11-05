@@ -1,13 +1,13 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\Tests\DeliveryMethod;
+namespace EsteIt\PackageDeliveryCalculator\Tests\Calculator;
 
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\AsendiaDeliveryMethod;
+use EsteIt\PackageDeliveryCalculator\Calculator\AsendiaCalculator;
 
 /**
  * @group unit
  */
-class AsendiaDeliveryMethodTest extends \PHPUnit_Framework_TestCase
+class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
 
@@ -30,11 +30,11 @@ class AsendiaDeliveryMethodTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTariff($options)
     {
-        $method = new AsendiaDeliveryMethod($options);
+        $method = new AsendiaCalculator($options);
 
         $now = new \DateTime();
         $tariff = $method->getTariff($now);
-        $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff', $tariff);
+        $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff', $tariff);
 
         $this->assertLessThanOrEqual($now, $tariff->getDate());
         $this->assertEquals('0.07', $tariff->getFuelSubcharge());
@@ -47,13 +47,13 @@ class AsendiaDeliveryMethodTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException($exceptionClass, $exceptionMessage);
 
-        $method = new AsendiaDeliveryMethod();
+        $method = new AsendiaCalculator();
         $method->getTariff(new \DateTime());
     }
 
     public function testCalculate()
     {
-        $deliveryMethod = new AsendiaDeliveryMethod();
+        $deliveryMethod = new AsendiaCalculator();
         $deliveryMethod->addTariff($this->getFixture('tariff_1'));
         $package = $this->getFixture('base_package_1');
 
@@ -61,7 +61,7 @@ class AsendiaDeliveryMethodTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('EsteIt\PackageDeliveryCalculator\CalculationResult', $result);
         $this->assertSame('22.10', $result->getTotalCost());
-        $this->assertSame($deliveryMethod, $result->getDeliveryMethod());
+        $this->assertSame($deliveryMethod, $result->getCalculator());
         $this->assertSame($package, $result->getPackage());
     }
 

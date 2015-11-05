@@ -1,14 +1,14 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod;
+namespace EsteIt\PackageDeliveryCalculator\Calculator;
 
 use EsteIt\PackageDeliveryCalculator\CalculationResult;
 use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 
 /**
- * Interface DeliveryMethodInterface
+ * Interface CalculatorInterface
  */
-interface DeliveryMethodInterface
+interface CalculatorInterface
 {
     /**
      * @param PackageInterface $package

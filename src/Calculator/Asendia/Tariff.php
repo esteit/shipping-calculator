@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia;
+namespace EsteIt\PackageDeliveryCalculator\Calculator\Asendia;
 
 use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
 use EsteIt\PackageDeliveryCalculator\Exception\UnsuitableDeliveryMethodException;

@@ -2,7 +2,7 @@
 
 namespace EsteIt\PackageDeliveryCalculator\Event;
 
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface;
+use EsteIt\PackageDeliveryCalculator\Calculator\CalculatorInterface;
 use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -12,9 +12,9 @@ use Symfony\Component\EventDispatcher\Event;
 class BeforeCalculateEvent extends Event
 {
     /**
-     * @var DeliveryMethodInterface
+     * @var CalculatorInterface
      */
-    protected $deliveryMethod;
+    protected $calculator;
 
     /**
      * @var PackageInterface
@@ -24,21 +24,21 @@ class BeforeCalculateEvent extends Event
     /**
      * BeforeCalculateEvent constructor.
      *
-     * @param DeliveryMethodInterface $deliveryMethod
+     * @param CalculatorInterface $calculator
      * @param PackageInterface        $package
      */
-    public function __construct(DeliveryMethodInterface $deliveryMethod, PackageInterface $package)
+    public function __construct(CalculatorInterface $calculator, PackageInterface $package)
     {
-        $this->deliveryMethod = $deliveryMethod;
+        $this->calculator = $calculator;
         $this->package = $package;
     }
 
     /**
-     * @return DeliveryMethodInterface
+     * @return CalculatorInterface
      */
-    public function getDeliveryMethod()
+    public function getCalculator()
     {
-        return $this->deliveryMethod;
+        return $this->calculator;
     }
 
     /**

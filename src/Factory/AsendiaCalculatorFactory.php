@@ -3,16 +3,16 @@
 namespace EsteIt\PackageDeliveryCalculator\Factory;
 
 use EsteIt\PackageDeliveryCalculator\Configuration\AsendiaConfiguration;
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\PriceGroup;
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\RecipientCountry;
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff;
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\AsendiaDeliveryMethod;
+use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\PriceGroup;
+use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\RecipientCountry;
+use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff;
+use EsteIt\PackageDeliveryCalculator\Calculator\AsendiaCalculator;
 use Symfony\Component\Config\Definition\Processor;
 
 /**
- * Class AsendiaDeliveryMethodFactory
+ * Class AsendiaCalculatorFactory
  */
-class AsendiaDeliveryMethodFactory
+class AsendiaCalculatorFactory
 {
     public function create(array $config)
     {
@@ -20,10 +20,10 @@ class AsendiaDeliveryMethodFactory
 
         $tariffs = $this->createTariffs($config['tariffs']);
 
-        $deliveryMethod = new AsendiaDeliveryMethod();
-        $deliveryMethod->addTariffs($tariffs);
+        $calculator = new AsendiaCalculator();
+        $calculator->addTariffs($tariffs);
 
-        return $deliveryMethod;
+        return $calculator;
     }
 
     protected function createTariffs(array $tariffsConfig)

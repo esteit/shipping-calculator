@@ -1,18 +1,17 @@
 <?php
 
-namespace EsteIt\PackageDeliveryCalculator\DeliveryMethod;
+namespace EsteIt\PackageDeliveryCalculator\Calculator;
 
 use EsteIt\PackageDeliveryCalculator\CalculationResult;
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\Asendia\Tariff;
-use EsteIt\PackageDeliveryCalculator\Exception\InvalidArgumentException;
+use EsteIt\PackageDeliveryCalculator\Calculator\Asendia\Tariff;
 use EsteIt\PackageDeliveryCalculator\Exception\LogicException;
 use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Class AsendiaDeliveryMethod
+ * Class AsendiaCalculator
  */
-class AsendiaDeliveryMethod implements DeliveryMethodInterface
+class AsendiaCalculator implements CalculatorInterface
 {
     /**
      * @var Tariff[]
@@ -42,7 +41,7 @@ class AsendiaDeliveryMethod implements DeliveryMethodInterface
 
         $result = new CalculationResult();
         $result->setPackage($package);
-        $result->setDeliveryMethod($this);
+        $result->setCalculator($this);
         $result->setTotalCost($totalCost);
 
         return $result;

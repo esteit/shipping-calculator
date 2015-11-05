@@ -2,7 +2,7 @@
 
 namespace EsteIt\PackageDeliveryCalculator;
 
-use EsteIt\PackageDeliveryCalculator\DeliveryMethod\DeliveryMethodInterface;
+use EsteIt\PackageDeliveryCalculator\Calculator\CalculatorInterface;
 use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 
 /**
@@ -11,9 +11,9 @@ use EsteIt\PackageDeliveryCalculator\Package\PackageInterface;
 class CalculationResult
 {
     /**
-     * @var DeliveryMethodInterface
+     * @var CalculatorInterface
      */
-    protected $deliveryMethod;
+    protected $calculator;
 
     /**
      * @var PackageInterface
@@ -45,22 +45,22 @@ class CalculationResult
     }
 
     /**
-     * @param DeliveryMethodInterface $deliveryMethod
+     * @param CalculatorInterface $calculator
      * @return $this
      */
-    public function setDeliveryMethod(DeliveryMethodInterface $deliveryMethod)
+    public function setCalculator(CalculatorInterface $calculator)
     {
-        $this->deliveryMethod = $deliveryMethod;
+        $this->calculator = $calculator;
 
         return $this;
     }
 
     /**
-     * @return DeliveryMethodInterface
+     * @return CalculatorInterface
      */
-    public function getDeliveryMethod()
+    public function getCalculator()
     {
-        return $this->deliveryMethod;
+        return $this->calculator;
     }
 
     /**
