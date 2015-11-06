@@ -2,15 +2,15 @@
 
 namespace EsteIt\ShippingCalculator\Calculator;
 
-use EsteIt\ShippingCalculator\CalculationResult;
 use EsteIt\ShippingCalculator\Calculator\Asendia\Tariff;
 use EsteIt\ShippingCalculator\Exception\LogicException;
 use EsteIt\ShippingCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 
 /**
  * Class AsendiaCalculator
  */
-class AsendiaCalculator implements CalculatorInterface
+class AsendiaCalculator extends AbstractCalculator
 {
     /**
      * @var Tariff[]
@@ -22,20 +22,10 @@ class AsendiaCalculator implements CalculatorInterface
         $this->tariffs = [];
     }
 
-    /**
-     * @param PackageInterface $package
-     * @return mixed
-     */
-    public function calculate(PackageInterface $package)
+    protected function calculateTotalCost(PackageInterface $package)
     {
-        $totalCost = $this->getTariff($package->getCalculationDate())->calculate($package);
-
-        $result = new CalculationResult();
-        $result->setPackage($package);
-        $result->setCalculator($this);
-        $result->setTotalCost($totalCost);
-
-        return $result;
+        $tariff = $this->getTariff($package->getCalculationDate());
+        return $tariff->calculate($package);
     }
 
     /**
@@ -80,7 +70,7 @@ class AsendiaCalculator implements CalculatorInterface
         }
 
         if (is_null($currentTariff)) {
-            throw new LogicException('Tariff was not found.');
+            throw new LogicException('Tariff was not found.', BasicExceptionInterface::CODE_CAN_NOT_CALCULATE);
         }
 
         return $currentTariff;

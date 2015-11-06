@@ -2,7 +2,8 @@
 
 namespace EsteIt\ShippingCalculator;
 
-use EsteIt\ShippingCalculator\Calculator\CalculatorInterface;
+use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
+use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 use EsteIt\ShippingCalculator\Package\PackageInterface;
 
 /**
@@ -11,7 +12,7 @@ use EsteIt\ShippingCalculator\Package\PackageInterface;
 class CalculationResult
 {
     /**
-     * @var CalculatorInterface
+     * @var AbstractCalculator
      */
     protected $calculator;
 
@@ -24,6 +25,11 @@ class CalculationResult
      * @var string|int|float
      */
     protected $totalCost;
+
+    /**
+     * @var BasicExceptionInterface
+     */
+    protected $error;
 
     /**
      * @param string|int|float $totalCost
@@ -45,10 +51,10 @@ class CalculationResult
     }
 
     /**
-     * @param CalculatorInterface $calculator
+     * @param AbstractCalculator $calculator
      * @return $this
      */
-    public function setCalculator(CalculatorInterface $calculator)
+    public function setCalculator(AbstractCalculator $calculator)
     {
         $this->calculator = $calculator;
 
@@ -56,7 +62,7 @@ class CalculationResult
     }
 
     /**
-     * @return CalculatorInterface
+     * @return AbstractCalculator
      */
     public function getCalculator()
     {
@@ -80,5 +86,24 @@ class CalculationResult
     public function getPackage()
     {
         return $this->package;
+    }
+
+    /**
+     * @return BasicExceptionInterface|\Exception
+     */
+    public function getError()
+    {
+        return $this->error;
+    }
+
+    /**
+     * @param BasicExceptionInterface $error
+     * @return BasicExceptionInterface
+     */
+    public function setError(BasicExceptionInterface $error)
+    {
+        $this->error = $error;
+
+        return $error;
     }
 }

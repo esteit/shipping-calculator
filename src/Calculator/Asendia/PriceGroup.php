@@ -2,8 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Calculator\Asendia;
 
-use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
-use EsteIt\ShippingCalculator\Exception\LogicException;
+use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\Native;
 
@@ -77,7 +76,7 @@ class PriceGroup
     public function getPrice($weight)
     {
         if (!is_scalar($weight)) {
-            throw new InvalidArgumentException('Weight should be a scalar value.');
+            throw new InvalidWeightException('Weight should be a scalar value.');
         }
 
         $currentWeight = null;
@@ -92,7 +91,7 @@ class PriceGroup
         }
 
         if (is_null($price)) {
-            throw new LogicException('Price was not found.');
+            throw new InvalidWeightException('Can not calculate shipping for this weight.');
         }
 
         return $price;

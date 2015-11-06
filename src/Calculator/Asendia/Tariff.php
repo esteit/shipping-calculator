@@ -2,8 +2,9 @@
 
 namespace EsteIt\ShippingCalculator\Calculator\Asendia;
 
-use EsteIt\ShippingCalculator\Exception\LogicException;
-use EsteIt\ShippingCalculator\Exception\UnsuitableDeliveryMethodException;
+use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
+use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
+use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Package\PackageInterface;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\Native;
@@ -80,7 +81,7 @@ class Tariff
     {
         $isValidSenderCountry = in_array($package->getSenderAddress()->getCountryCode(), $this->senderCountries);
         if (!$isValidSenderCountry) {
-            throw new UnsuitableDeliveryMethodException('Can not send package from this country.');
+            throw new InvalidSenderAddressException();
         }
 
         $country = $this->getRecipientCountry($package->getRecipientAddress()->getCountryCode());
@@ -103,7 +104,7 @@ class Tariff
     public function getPriceGroup($number)
     {
         if (!array_key_exists($number, $this->priceGroups)) {
-            throw new LogicException('Price group does not exist.');
+            throw new InvalidConfigurationException('Price group does not exist.');
         }
 
         return $this->priceGroups[$number];
@@ -186,7 +187,7 @@ class Tariff
     public function getRecipientCountry($code)
     {
         if (!array_key_exists($code, $this->recipientCountries)) {
-            throw new LogicException('Country was not found');
+            throw new InvalidRecipientAddressException();
         }
 
         return $this->recipientCountries[$code];
