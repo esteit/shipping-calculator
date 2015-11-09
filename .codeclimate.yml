@@ -1,0 +1,14 @@
+languages:
+  PHP: true
+
+engines:
+  fixme:
+    enabled: true
+  phpcodesniffer:
+    enabled: true
+  phpmd:
+    enabled: true
+
+exlude_paths:
+  - examples/*
+  - tests/
