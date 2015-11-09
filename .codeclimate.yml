@@ -11,4 +11,4 @@ engines:
 
 exlude_paths:
   - examples/*
-  - tests/
+  - tests/*
