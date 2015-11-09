@@ -20,6 +20,7 @@ class AsendiaConfiguration implements ConfigurationInterface
                             ->scalarNode('date')->end()
                             ->scalarNode('fuel_subcharge')->end()
                             ->scalarNode('mass_unit')->end()
+                            ->scalarNode('currency')->end()
                             ->arrayNode('recipient_countries')
                                 ->prototype('array')
                                     ->children()
