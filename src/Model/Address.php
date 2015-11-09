@@ -1,11 +1,11 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Address;
+namespace EsteIt\ShippingCalculator\Model;
 
 /**
- * Class BaseAddress
+ * Class Address
  */
-class BaseAddress implements AddressInterface
+class Address implements AddressInterface
 {
     protected $countryCode;
 

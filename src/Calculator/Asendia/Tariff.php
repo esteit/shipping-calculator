@@ -5,7 +5,9 @@ namespace EsteIt\ShippingCalculator\Calculator\Asendia;
 use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
 use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
-use EsteIt\ShippingCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Model\PackageInterface;
+use Moriony\Trivial\Converter\UnitConverterInterface;
+use Moriony\Trivial\Converter\WeightConverter;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\NativeMath;
 
@@ -38,6 +40,14 @@ class Tariff
      * @var MathInterface
      */
     protected $math;
+    /**
+     * @var UnitConverterInterface
+     */
+    protected $weightConverter;
+    /**
+     * @var string
+     */
+    protected $weightUnit;
 
     /**
      * Tariff constructor.
@@ -86,11 +96,13 @@ class Tariff
         $country = $this->getRecipientCountry($package->getRecipientAddress()->getCountryCode());
         $priceGroup = $this->getPriceGroup($country->getPriceGroup());
 
+        $weight = $package->getWeight();
+        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->getWeightUnit());
+
         $math = $this->getMath();
-        
-        $cost = $priceGroup->getPrice($package->getWeight());
-        $pounds = $math->roundDown($package->getWeight());
-        $fuelCost = $math->mul($pounds, $this->getFuelSubcharge());
+        $cost = $priceGroup->getPrice($weight);
+        $wholeWeight = $math->roundDown($weight);
+        $fuelCost = $math->mul($wholeWeight, $this->getFuelSubcharge());
         $total = $math->sum($cost, $fuelCost);
         $total = $math->roundUp($total, 2);
         $result = number_format($total, 2, '.', '');
@@ -213,6 +225,48 @@ class Tariff
     public function setMath(MathInterface $math)
     {
         $this->math = $math;
+
+        return $this;
+    }
+
+    /**
+     * @return UnitConverterInterface
+     */
+    public function getWeightConverter()
+    {
+        if (!$this->weightConverter) {
+            $this->weightConverter = new WeightConverter($this->getMath());
+        }
+
+        return $this->weightConverter;
+    }
+
+    /**
+     * @param UnitConverterInterface $weightConverter
+     * @return $this
+     */
+    public function setWeightConverter(UnitConverterInterface $weightConverter)
+    {
+        $this->weightConverter = $weightConverter;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWeightUnit()
+    {
+        return $this->weightUnit;
+    }
+
+    /**
+     * @param string $weightUnit
+     * @return $this
+     */
+    public function setWeightUnit($weightUnit)
+    {
+        $this->weightUnit = $weightUnit;
 
         return $this;
     }

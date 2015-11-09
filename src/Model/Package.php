@@ -1,13 +1,11 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Package;
-
-use EsteIt\ShippingCalculator\Address\AddressInterface;
+namespace EsteIt\ShippingCalculator\Model;
 
 /**
- * Class BasePackage
+ * Class Package
  */
-class BasePackage implements PackageInterface
+class Package implements PackageInterface
 {
     protected $weight;
     protected $calculationDate;
@@ -15,7 +13,7 @@ class BasePackage implements PackageInterface
     protected $recipientAddress;
 
     /**
-     * @param mixed $weight
+     * @param WeightInterface $weight
      * @return $this
      */
     public function setWeight($weight)
@@ -26,7 +24,7 @@ class BasePackage implements PackageInterface
     }
 
     /**
-     * @return mixed
+     * @return WeightInterface
      */
     public function getWeight()
     {

@@ -3,7 +3,7 @@
 namespace EsteIt\ShippingCalculator\Event;
 
 use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
-use EsteIt\ShippingCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Model\PackageInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**

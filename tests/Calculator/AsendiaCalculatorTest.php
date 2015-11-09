@@ -20,7 +20,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         if (!$this->fixtures) {
             $loader = new \Nelmio\Alice\Fixtures\Loader();
-            $this->fixtures = $loader->load(__DIR__.'/fixtures.yml');
+            $this->fixtures = $loader->load(__DIR__.'/../fixtures.yml');
         }
         return $this->fixtures[$name];
     }
@@ -61,6 +61,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
         $result = $deliveryMethod->calculate($package);
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculationResult', $result);
+        $this->assertNull($result->getError());
         $this->assertSame('22.10', $result->getTotalCost());
         $this->assertSame($deliveryMethod, $result->getCalculator());
         $this->assertSame($package, $result->getPackage());

@@ -1,6 +1,7 @@
 <?php
 
 namespace EsteIt\ShippingCalculator\Tests\Calculator;
+
 use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Event\AfterCalculateEvent;
 use EsteIt\ShippingCalculator\Event\BeforeCalculateEvent;
@@ -18,7 +19,7 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $calculator = $this->getCalculatorMock();
-        $package = \Mockery::mock('EsteIt\ShippingCalculator\Package\PackageInterface');
+        $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
         $calculator->setDispatcher($dispatcher);
         $calculator->calculate($package);
     }
@@ -27,7 +28,7 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         $calculator = $this->getCalculatorMock();
 
-        $package = \Mockery::mock('EsteIt\ShippingCalculator\Package\PackageInterface');
+        $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
 
         $calculator->getDispatcher()->addListener('before_calculate', function ($e) use ($calculator, $package) {
             /** @var BeforeCalculateEvent $e */
@@ -42,7 +43,7 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
     public function testAfterCalculateEvent()
     {
         $calculator = $this->getCalculatorMock();
-        $package = \Mockery::mock('EsteIt\ShippingCalculator\Package\PackageInterface');
+        $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
 
         $calculator->getDispatcher()->addListener('after_calculate', function ($e) use ($calculator, $package) {
             /** @var AfterCalculateEvent $e */
@@ -67,7 +68,7 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
             ->andThrow('EsteIt\ShippingCalculator\Exception\LogicException')
             ->getMock();
 
-        $package = \Mockery::mock('EsteIt\ShippingCalculator\Package\PackageInterface');
+        $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
         $result = $calculator->calculate($package);
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculationResult', $result);
@@ -85,7 +86,7 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
             ->andThrow('Exception')
             ->getMock();
 
-        $package = \Mockery::mock('EsteIt\ShippingCalculator\Package\PackageInterface');
+        $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
         $calculator->calculate($package);
     }
 

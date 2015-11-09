@@ -6,7 +6,7 @@ use EsteIt\ShippingCalculator\CalculationResult;
 use EsteIt\ShippingCalculator\Event\AfterCalculateEvent;
 use EsteIt\ShippingCalculator\Event\BeforeCalculateEvent;
 use EsteIt\ShippingCalculator\Event\Events;
-use EsteIt\ShippingCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Model\PackageInterface;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;

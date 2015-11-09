@@ -4,7 +4,7 @@ namespace EsteIt\ShippingCalculator;
 
 use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
-use EsteIt\ShippingCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Model\PackageInterface;
 
 /**
  * Class ShippingCalculationService

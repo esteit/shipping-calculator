@@ -4,7 +4,7 @@ namespace EsteIt\ShippingCalculator\Calculator;
 
 use EsteIt\ShippingCalculator\Calculator\Asendia\Tariff;
 use EsteIt\ShippingCalculator\Exception\LogicException;
-use EsteIt\ShippingCalculator\Package\PackageInterface;
+use EsteIt\ShippingCalculator\Model\PackageInterface;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 
 /**

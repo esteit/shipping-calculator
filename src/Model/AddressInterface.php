@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Address;
+namespace EsteIt\ShippingCalculator\Model;
 
 /**
  * Interface AddressInterface

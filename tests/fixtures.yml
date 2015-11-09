@@ -15,49 +15,62 @@ EsteIt\ShippingCalculator\Calculator\Asendia\Tariff:
     fuelSubcharge: 0.07
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
   tariff_2:
     date: <(new DateTime("-1 DAY"))>
     fuelSubcharge: 0.07
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
   tariff_3:
     date: <(new DateTime("-1 DAY"))>
     fuelSubcharge: 0.05
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
   tariff_4:
     date: <(new DateTime("+10 DAY"))>
     fuelSubcharge: 0.05
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
   tariff_5:
     date: <(new DateTime("-1 DAY"))>
     fuelSubcharge: 0.07
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
   tariff_6:
     date: <(new DateTime("+10 DAY"))>
     fuelSubcharge: 0.05
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
   tariff_7:
     date: <(new DateTime("-2 DAY"))>
     fuelSubcharge: 0.06
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
   tariff_8:
     date: <(new DateTime("-1 DAY"))>
     fuelSubcharge: 0.07
     addPriceGroup: [@price_group_1_1]
     addRecipientCountry: [@recipient_country_usa]
+    weightUnit: lb
 
-EsteIt\ShippingCalculator\Address\BaseAddress:
+EsteIt\ShippingCalculator\Model\Weight:
+  weight_10_kg:
+    value: 10
+    unit: lb
+
+EsteIt\ShippingCalculator\Model\Address:
   base_address_usa:
     countryCode: USA
 
-EsteIt\ShippingCalculator\Package\BasePackage:
+EsteIt\ShippingCalculator\Model\Package:
   base_package_1:
     calculationDate: <(new DateTime())>
-    weight: 10
+    weight: @weight_10_kg
     senderAddress: @base_address_usa
     recipientAddress: @base_address_usa

@@ -1,8 +1,6 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Package;
-
-use EsteIt\ShippingCalculator\Address\AddressInterface;
+namespace EsteIt\ShippingCalculator\Model;
 
 /**
  * Interface PackageInterface
@@ -10,7 +8,7 @@ use EsteIt\ShippingCalculator\Address\AddressInterface;
 interface PackageInterface
 {
     /**
-     * @return string
+     * @return WeightInterface
      */
     public function getWeight();
 
