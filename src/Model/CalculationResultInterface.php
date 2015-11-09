@@ -11,6 +11,17 @@ use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 interface CalculationResultInterface
 {
     /**
+     * @param string $currency
+     * @return $this
+     */
+    public function setCurrency($currency);
+
+    /**
+     * @return string
+     */
+    public function getCurrency();
+
+    /**
      * @param string|int|float $totalCost
      * @return $this
      */

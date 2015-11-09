@@ -4,6 +4,7 @@ namespace EsteIt\ShippingCalculator\Calculator;
 
 use EsteIt\ShippingCalculator\Calculator\Asendia\Tariff;
 use EsteIt\ShippingCalculator\Exception\LogicException;
+use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
 use EsteIt\ShippingCalculator\Model\PackageInterface;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 
@@ -22,10 +23,12 @@ class AsendiaCalculator extends AbstractCalculator
         $this->tariffs = [];
     }
 
-    protected function calculateTotalCost(PackageInterface $package)
+    protected function visit(CalculationResultInterface $result, PackageInterface $package)
     {
         $tariff = $this->getTariff($package->getCalculationDate());
-        return $tariff->calculate($package);
+
+        $result->setTotalCost($tariff->calculate($package));
+        $result->setCurrency($tariff->getCurrency());
     }
 
     /**

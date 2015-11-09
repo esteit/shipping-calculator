@@ -50,7 +50,6 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
             $this->assertInstanceOf('EsteIt\ShippingCalculator\Event\AfterCalculateEvent', $e);
             $result = $e->getResult();
             $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
-            $this->assertSame(10, $result->getTotalCost());
             $this->assertSame($package, $result->getPackage());
             $this->assertSame($calculator, $result->getCalculator());
             $this->assertNull($result->getError());
@@ -61,10 +60,10 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
 
     public function testExpectedException()
     {
-        $calculator = \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[calculateTotalCost]')
+        $calculator = \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[visit]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('calculateTotalCost')
+            ->shouldReceive('visit')
             ->andThrow('EsteIt\ShippingCalculator\Exception\LogicException')
             ->getMock();
 
@@ -79,10 +78,10 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('Exception');
 
-        $calculator = \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[calculateTotalCost]')
+        $calculator = \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[visit]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('calculateTotalCost')
+            ->shouldReceive('visit')
             ->andThrow('Exception')
             ->getMock();
 
@@ -95,12 +94,11 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
      */
     public function getCalculatorMock()
     {
-        return \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[calculateTotalCost]')
+        return \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[visit]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('calculateTotalCost')
+            ->shouldReceive('visit')
             ->once()
-            ->andReturn(10)
             ->getMock();
     }
 }

@@ -4,7 +4,6 @@ namespace EsteIt\ShippingCalculator\Model;
 
 use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
-use EsteIt\ShippingCalculator\Model\PackageInterface;
 
 /**
  * Class CalculationResult
@@ -32,6 +31,11 @@ class CalculationResult implements CalculationResultInterface
     protected $error;
 
     /**
+     * @var string
+     */
+    protected $currency;
+
+    /**
      * @param string|int|float $totalCost
      * @return $this
      */
@@ -48,6 +52,25 @@ class CalculationResult implements CalculationResultInterface
     public function getTotalCost()
     {
         return $this->totalCost;
+    }
+
+    /**
+     * @param string $currency
+     * @return $this
+     */
+    public function setCurrency($currency)
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrency()
+    {
+        return $this->currency;
     }
 
     /**

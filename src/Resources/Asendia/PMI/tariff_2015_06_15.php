@@ -4,6 +4,7 @@ return [
     'date' => '2015-06-15',
     'fuel_subcharge' => '0.07',
     'mass_unit' => 'lb',
+    'currency' => 'USD',
     'recipient_countries' => [
         ['code' => 'AFG', 'price_group' => 6, 'weight_limit' => 66],
         ['code' => 'ALB', 'price_group' => 4, 'weight_limit' => 44],

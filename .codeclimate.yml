@@ -9,7 +9,7 @@ engines:
   phpmd:
     enabled: true
 
-exlude_paths:
+exclude_paths:
   - examples/*
   - tests/*
   - src/Resources/*

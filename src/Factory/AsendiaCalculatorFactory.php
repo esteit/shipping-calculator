@@ -35,12 +35,12 @@ class AsendiaCalculatorFactory
             $priceGroups = $this->createPriceGroups($tariffConfig['price_groups']);
 
             $tariff = new Tariff();
-
             $tariff->setDate(new \DateTime($tariffConfig['date']));
             $tariff->addRecipientCountries($recipientCountries);
             $tariff->addPriceGroups($priceGroups);
             $tariff->setFuelSubcharge($tariffConfig['fuel_subcharge']);
-            $tariff->setWeightUnit($tariffConfig['mass_unit']);
+            $tariff->setMassUnit($tariffConfig['mass_unit']);
+            $tariff->setCurrency($tariffConfig['currency']);
 
             $tariffs[] = $tariff;
         }

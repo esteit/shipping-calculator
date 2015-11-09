@@ -39,6 +39,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertLessThanOrEqual($now, $tariff->getDate());
         $this->assertEquals('0.07', $tariff->getFuelSubcharge());
+        $this->assertEquals('USD', $tariff->getCurrency());
     }
 
     /**
@@ -65,6 +66,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('22.10', $result->getTotalCost());
         $this->assertSame($deliveryMethod, $result->getCalculator());
         $this->assertSame($package, $result->getPackage());
+        $this->assertSame('USD', $result->getCurrency());
     }
 
     /**

@@ -90,7 +90,7 @@ abstract class AbstractCalculator
         $result->setCalculator($this);
 
         try {
-            $result->setTotalCost($this->calculateTotalCost($package));
+            $this->visit($result, $package);
         } catch (BasicExceptionInterface $e) {
             $result->setError($e);
         }
@@ -103,15 +103,16 @@ abstract class AbstractCalculator
     /**
      * @return CalculationResultInterface
      */
-    final protected function createResult()
+    protected function createResult()
     {
         $resultClass = $this->getResultClass();
         return new $resultClass;
     }
 
     /**
-     * @param PackageInterface $package
+     * @param CalculationResultInterface $result
+     * @param PackageInterface           $package
      * @return int|float|string
      */
-    abstract protected function calculateTotalCost(PackageInterface $package);
+    abstract protected function visit(CalculationResultInterface $result, PackageInterface $package);
 }

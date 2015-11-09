@@ -30,12 +30,11 @@ class ShippingCalculationServiceTest extends \PHPUnit_Framework_TestCase
         $service = new ShippingCalculationService();
 
         $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
-        $calculator = \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[calculateTotalCost]')
+        $calculator = \Mockery::mock('EsteIt\ShippingCalculator\Calculator\AbstractCalculator[visit]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('calculateTotalCost')
+            ->shouldReceive('visit')
             ->once()
-            ->andReturn(10)
             ->getMock();
 
         $service->addCalculator('test', $calculator);

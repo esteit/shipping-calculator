@@ -47,7 +47,11 @@ class Tariff
     /**
      * @var string
      */
-    protected $weightUnit;
+    protected $massUnit;
+    /**
+     * @var string
+     */
+    protected $currency;
 
     /**
      * Tariff constructor.
@@ -56,6 +60,7 @@ class Tariff
     {
         $this->senderCountries = ['USA'];
         $this->recipientCountries = [];
+        $this->currency = 'USD';
     }
 
     /**
@@ -97,7 +102,7 @@ class Tariff
         $priceGroup = $this->getPriceGroup($country->getPriceGroup());
 
         $weight = $package->getWeight();
-        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->getWeightUnit());
+        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->getMassUnit());
 
         $math = $this->getMath();
         $cost = $priceGroup->getPrice($weight);
@@ -255,18 +260,37 @@ class Tariff
     /**
      * @return string
      */
-    public function getWeightUnit()
+    public function getMassUnit()
     {
-        return $this->weightUnit;
+        return $this->massUnit;
     }
 
     /**
-     * @param string $weightUnit
+     * @param string $massUnit
      * @return $this
      */
-    public function setWeightUnit($weightUnit)
+    public function setMassUnit($massUnit)
     {
-        $this->weightUnit = $weightUnit;
+        $this->massUnit = $massUnit;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrency()
+    {
+        return $this->currency;
+    }
+
+    /**
+     * @param string $currency
+     * @return $this
+     */
+    public function setCurrency($currency)
+    {
+        $this->currency = $currency;
 
         return $this;
     }
