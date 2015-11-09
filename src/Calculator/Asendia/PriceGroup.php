@@ -4,7 +4,7 @@ namespace EsteIt\ShippingCalculator\Calculator\Asendia;
 
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use Moriony\Trivial\Math\MathInterface;
-use Moriony\Trivial\Math\Native;
+use Moriony\Trivial\Math\NativeMath;
 
 /**
  * Class PriceGroup
@@ -25,11 +25,6 @@ class PriceGroup
      * @var MathInterface
      */
     protected $math;
-
-    public function __construct()
-    {
-        $this->math = new Native();
-    }
 
     /**
      * @return string
@@ -55,6 +50,10 @@ class PriceGroup
      */
     public function getMath()
     {
+        if (!$this->math) {
+            $this->math = new NativeMath();
+        }
+
         return $this->math;
     }
 

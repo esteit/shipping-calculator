@@ -44,7 +44,6 @@ class Tariff
      */
     public function __construct()
     {
-        $this->math = new NativeMath();
         $this->senderCountries = ['USA'];
         $this->recipientCountries = [];
     }
@@ -87,11 +86,13 @@ class Tariff
         $country = $this->getRecipientCountry($package->getRecipientAddress()->getCountryCode());
         $priceGroup = $this->getPriceGroup($country->getPriceGroup());
 
+        $math = $this->getMath();
+        
         $cost = $priceGroup->getPrice($package->getWeight());
-        $pounds = $this->math->roundDown($package->getWeight());
-        $fuelCost = $this->math->mul($pounds, $this->getFuelSubcharge());
-        $total = $this->math->sum($cost, $fuelCost);
-        $total = $this->math->roundUp($total, 2);
+        $pounds = $math->roundDown($package->getWeight());
+        $fuelCost = $math->mul($pounds, $this->getFuelSubcharge());
+        $total = $math->sum($cost, $fuelCost);
+        $total = $math->roundUp($total, 2);
         $result = number_format($total, 2, '.', '');
 
         return $result;
@@ -198,6 +199,10 @@ class Tariff
      */
     public function getMath()
     {
+        if (!$this->math) {
+            $this->math = new NativeMath();
+        }
+
         return $this->math;
     }
 
