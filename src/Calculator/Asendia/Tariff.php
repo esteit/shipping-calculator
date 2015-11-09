@@ -7,7 +7,7 @@ use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Package\PackageInterface;
 use Moriony\Trivial\Math\MathInterface;
-use Moriony\Trivial\Math\Native;
+use Moriony\Trivial\Math\NativeMath;
 
 /**
  * Class Tariff
@@ -44,7 +44,7 @@ class Tariff
      */
     public function __construct()
     {
-        $this->math = new Native();
+        $this->math = new NativeMath();
         $this->senderCountries = ['USA'];
         $this->recipientCountries = [];
     }
