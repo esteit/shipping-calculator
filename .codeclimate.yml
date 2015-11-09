@@ -12,3 +12,4 @@ engines:
 exlude_paths:
   - examples/*
   - tests/*
+  - src/Resources/*
