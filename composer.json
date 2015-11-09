@@ -17,7 +17,7 @@
         "php": ">=5.4",
         "symfony/event-dispatcher": "~2.7",
         "symfony/config": "~2.7",
-        "moriony/trivial": "~0.1"
+        "moriony/trivial": "~0.2"
     },
     "require-dev": {
         "mockery/mockery": "~0.9",
