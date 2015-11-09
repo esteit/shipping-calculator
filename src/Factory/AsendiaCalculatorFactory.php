@@ -40,7 +40,7 @@ class AsendiaCalculatorFactory
             $tariff->addRecipientCountries($recipientCountries);
             $tariff->addPriceGroups($priceGroups);
             $tariff->setFuelSubcharge($tariffConfig['fuel_subcharge']);
-            $tariff->setWeightUnit($tariffConfig['weight_unit']);
+            $tariff->setWeightUnit($tariffConfig['mass_unit']);
 
             $tariffs[] = $tariff;
         }

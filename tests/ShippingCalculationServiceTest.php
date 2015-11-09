@@ -42,6 +42,6 @@ class ShippingCalculationServiceTest extends \PHPUnit_Framework_TestCase
 
         $result = $service->calculate($package);
         $this->assertCount(1, $result);
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculationResult', reset($result));
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', reset($result));
     }
 }

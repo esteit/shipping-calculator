@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\ShippingCalculator;
+namespace EsteIt\ShippingCalculator\Model;
 
 use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
@@ -9,7 +9,7 @@ use EsteIt\ShippingCalculator\Model\PackageInterface;
 /**
  * Class CalculationResult
  */
-class CalculationResult
+class CalculationResult implements CalculationResultInterface
 {
     /**
      * @var AbstractCalculator

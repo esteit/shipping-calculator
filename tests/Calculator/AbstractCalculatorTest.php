@@ -49,7 +49,7 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
             /** @var AfterCalculateEvent $e */
             $this->assertInstanceOf('EsteIt\ShippingCalculator\Event\AfterCalculateEvent', $e);
             $result = $e->getResult();
-            $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculationResult', $result);
+            $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
             $this->assertSame(10, $result->getTotalCost());
             $this->assertSame($package, $result->getPackage());
             $this->assertSame($calculator, $result->getCalculator());
@@ -71,7 +71,7 @@ class AbstractCalculatorTest extends \PHPUnit_Framework_TestCase
         $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
         $result = $calculator->calculate($package);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculationResult', $result);
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Exception\BasicExceptionInterface', $result->getError());
     }
 
