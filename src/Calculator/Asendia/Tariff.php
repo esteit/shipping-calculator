@@ -108,7 +108,7 @@ class Tariff
 
         $math = $this->getMath();
         $cost = $priceGroup->getPrice($weight);
-        $wholeWeight = $math->roundDown($weight);
+        $wholeWeight = $math->roundUp($weight);
         $fuelCost = $math->mul($wholeWeight, $this->getFuelSubcharge());
         $total = $math->sum($cost, $fuelCost);
         $total = $math->roundUp($total, 2);
