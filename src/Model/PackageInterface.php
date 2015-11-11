@@ -26,4 +26,9 @@ interface PackageInterface
      * @return AddressInterface
      */
     public function getRecipientAddress();
+
+    /**
+     * @return DimensionsInterface
+     */
+    public function getDimensions();
 }

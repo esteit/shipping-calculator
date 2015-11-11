@@ -41,6 +41,9 @@ class AsendiaCalculatorFactory
             $tariff->setFuelSubcharge($tariffConfig['fuel_subcharge']);
             $tariff->setMassUnit($tariffConfig['mass_unit']);
             $tariff->setCurrency($tariffConfig['currency']);
+            $tariff->setDimensionsUnit($tariffConfig['dimensions_unit']);
+            $tariff->setSideLengthLimit($tariffConfig['side_length_limit']);
+            $tariff->setGirthLimit($tariffConfig['girth_limit']);
 
             $tariffs[] = $tariff;
         }
@@ -83,10 +86,7 @@ class AsendiaCalculatorFactory
     {
         $processor = new Processor();
         $configuration = new AsendiaConfiguration();
-        $processedConfig = $processor->processConfiguration(
-            $configuration,
-            [$config]
-        );
+        $processedConfig = $processor->processConfiguration($configuration, [$config]);
 
         return $processedConfig;
     }

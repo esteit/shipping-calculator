@@ -1,0 +1,37 @@
+EsteIt\ShippingCalculator\Model\Dimensions:
+  dimensions_11_10_10_in:
+    length: 11
+    width: 10
+    height: 10
+    unit: in
+  dimensions_10_11_10_in:
+    length: 10
+    width: 11
+    height: 10
+    unit: in
+  dimensions_10_10_11_in:
+    length: 10
+    width: 10
+    height: 11
+    unit: in
+  dimensions_10_10_10_in:
+    length: 10
+    width: 10
+    height: 10
+    unit: in
+
+EsteIt\ShippingCalculator\Model\Weight:
+  weight_10_lb:
+    value: 10
+    unit: lb
+
+EsteIt\ShippingCalculator\Model\Address:
+  french_address:
+    countryCode: FRA
+  russian_address:
+    countryCode: RUS
+
+EsteIt\ShippingCalculator\Model\Package:
+  package_1:
+    recipientAddress: @russian_address
+    weight: @weight_10_lb

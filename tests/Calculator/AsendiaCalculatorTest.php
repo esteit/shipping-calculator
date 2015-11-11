@@ -20,7 +20,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         if (!$this->fixtures) {
             $loader = new \Nelmio\Alice\Fixtures\Loader();
-            $this->fixtures = $loader->load(__DIR__.'/../fixtures.yml');
+            $this->fixtures = $loader->load(__DIR__.'/fixtures.yml');
         }
         return $this->fixtures[$name];
     }

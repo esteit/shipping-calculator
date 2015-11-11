@@ -23,7 +23,7 @@ class AsendiaCalculator extends AbstractCalculator
         $this->tariffs = [];
     }
 
-    protected function visit(CalculationResultInterface $result, PackageInterface $package)
+    public function visit(CalculationResultInterface $result, PackageInterface $package)
     {
         $tariff = $this->getTariff($package->getCalculationDate());
 

@@ -14,6 +14,7 @@ interface BasicExceptionInterface
     // Package error codes
     const CODE_INVALID_PACKAGE = 200;
     const CODE_INVALID_WEIGHT = 201;
+    const CODE_INVALID_DIMENSIONS = 202;
 
     // Sender address error codes
     const CODE_INVALID_SENDER_ADDRESS = 300;

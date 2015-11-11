@@ -11,6 +11,7 @@ class Package implements PackageInterface
     protected $calculationDate;
     protected $senderAddress;
     protected $recipientAddress;
+    protected $dimensions;
 
     /**
      * @param WeightInterface $weight
@@ -29,6 +30,25 @@ class Package implements PackageInterface
     public function getWeight()
     {
         return $this->weight;
+    }
+
+    /**
+     * @param DimensionsInterface $dimensions
+     * @return $this
+     */
+    public function setDimensions($dimensions)
+    {
+        $this->dimensions = $dimensions;
+
+        return $this;
+    }
+
+    /**
+     * @return DimensionsInterface
+     */
+    public function getDimensions()
+    {
+        return $this->dimensions;
     }
 
     /**

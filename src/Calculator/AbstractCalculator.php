@@ -114,5 +114,5 @@ abstract class AbstractCalculator
      * @param PackageInterface           $package
      * @return int|float|string
      */
-    abstract protected function visit(CalculationResultInterface $result, PackageInterface $package);
+    abstract public function visit(CalculationResultInterface $result, PackageInterface $package);
 }
