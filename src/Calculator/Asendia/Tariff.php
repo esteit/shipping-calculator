@@ -8,8 +8,8 @@ use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
+use EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator;
 use EsteIt\ShippingCalculator\Model\AddressInterface;
-use EsteIt\ShippingCalculator\Model\DimensionsInterface;
 use EsteIt\ShippingCalculator\Model\PackageInterface;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
@@ -98,7 +98,7 @@ class Tariff
     {
         $this->validateSenderAddress($package->getSenderAddress());
         $this->validateRecipientAddress($package->getRecipientAddress());
-        $this->validateDimensions($package->getDimensions());
+        $this->validateDimensions($package);
         $this->validateWeight($package);
 
         $priceGroup = $this->getPriceGroup($package);
@@ -145,15 +145,15 @@ class Tariff
     }
 
     /**
-     * @param DimensionsInterface $dimensions
+     * @param PackageInterface $package
      */
-    public function validateDimensions(DimensionsInterface $dimensions)
+    public function validateDimensions(PackageInterface $package)
     {
         $math = $this->getMath();
         $converter = $this->getLengthConverter();
         $girthCalculator = $this->getGirthCalculator();
 
-        $dimensions = $girthCalculator->normalizeDimensions($dimensions);
+        $dimensions = $girthCalculator->normalizeDimensions($package->getDimensions());
         $sideLengthLimit = $converter->convert($this->getSideLengthLimit(), $this->getDimensionsUnit(), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $sideLengthLimit)) {
             throw new InvalidDimensionsException('Side length limit is exceeded.');
@@ -161,7 +161,7 @@ class Tariff
 
         $girth = $girthCalculator->calculate($dimensions);
         $girthLimit = $converter->convert($this->getGirthLimit(), $this->getDimensionsUnit(), $dimensions->getUnit());
-        if ($math->greaterThan($girth, $girthLimit)) {
+        if ($math->greaterThan($girth->getValue(), $girthLimit)) {
             throw new InvalidDimensionsException('Girth limit is exceeded.');
         }
     }

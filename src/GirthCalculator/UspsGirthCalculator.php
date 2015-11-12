@@ -1,15 +1,16 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Calculator\Asendia;
+namespace EsteIt\ShippingCalculator\GirthCalculator;
 
 use EsteIt\ShippingCalculator\Model\Dimensions;
 use EsteIt\ShippingCalculator\Model\DimensionsInterface;
+use EsteIt\ShippingCalculator\Model\Girth;
 use Moriony\Trivial\Math\MathInterface;
 
 /**
  * Class UspsGirthCalculator
  */
-class UspsGirthCalculator
+class UspsGirthCalculator implements GirthCalculatorInterface
 {
     /**
      * @var MathInterface
@@ -53,17 +54,20 @@ class UspsGirthCalculator
 
     /**
      * @param DimensionsInterface $dimensions
-     * @return string
+     * @return Girth
      */
     public function calculate(DimensionsInterface $dimensions)
     {
         $dimensions = $this->normalizeDimensions($dimensions);
 
-        $girth = $dimensions->getLength();
-        $girth = $this->math->sum($girth, $this->math->mul($dimensions->getWidth(), 2));
-        $girth = $this->math->sum($girth, $this->math->mul($dimensions->getHeight(), 2));
+        $value = $dimensions->getLength();
+        $value = $this->math->sum($value, $this->math->mul($dimensions->getWidth(), 2));
+        $value = $this->math->sum($value, $this->math->mul($dimensions->getHeight(), 2));
+
+        $girth = new Girth();
+        $girth->setUnit($dimensions->getUnit());
+        $girth->setValue($value);
 
         return $girth;
     }
-
 }

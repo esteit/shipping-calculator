@@ -1,9 +1,9 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\Calculator;
+namespace EsteIt\ShippingCalculator\Tests\GirthCalculator;
 
-use EsteIt\ShippingCalculator\Calculator\Asendia\UspsGirthCalculator;
-use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
+use EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator;
+use EsteIt\ShippingCalculator\Model\Weight;
 use Moriony\Trivial\Math\NativeMath;
 
 /**
@@ -45,7 +45,8 @@ class UspsGirthCalculatorTest extends \PHPUnit_Framework_TestCase
     public function testCalculate($dimensions, $calculation)
     {
         $calculator = new UspsGirthCalculator(new NativeMath());
-        $this->assertEquals($calculation, $calculator->calculate($dimensions));
+        $girth = $calculator->calculate($dimensions);
+        $this->assertEquals($calculation, $girth->getValue());
     }
 
     /**

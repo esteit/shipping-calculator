@@ -1,9 +1,11 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\Calculator;
+namespace EsteIt\ShippingCalculator\Tests\Calculator\Asendia;
 
 use EsteIt\ShippingCalculator\Calculator\Asendia\RecipientCountry;
 use EsteIt\ShippingCalculator\Calculator\Asendia\Tariff;
+use EsteIt\ShippingCalculator\Model\Package;
+use EsteIt\ShippingCalculator\Model\Weight;
 
 /**
  * @group unit
@@ -66,7 +68,11 @@ class TariffTest extends \PHPUnit_Framework_TestCase
         $tariff->setGirthLimit('10');
         $tariff->setDimensionsUnit('in');
 
-        $tariff->validateDimensions($dimensions);
+        $package = new Package();
+        $package->setDimensions($dimensions);
+        $package->setWeight(new Weight());
+
+        $tariff->validateDimensions($package);
     }
 
     public function testValidateWeightException()
