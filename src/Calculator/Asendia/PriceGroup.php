@@ -78,12 +78,17 @@ class PriceGroup
             throw new InvalidWeightException('Weight should be a scalar value.');
         }
 
+        $math = $this->getMath();
+        if ($math->lessThan($weight, 0)) {
+            throw new InvalidWeightException('Weight should be greater than zero.');
+        }
+
         $currentWeight = null;
         $price = null;
         $math = $this->getMath();
 
         foreach ($this->prices as $w => $p) {
-            if ($math->greaterOrEqualThan($w, $weight) && $math->lessThan($currentWeight, $w)) {
+            if ($math->lessOrEqualThan($currentWeight, $weight) && $math->lessOrEqualThan($weight, $w)) {
                 $currentWeight = $w;
                 $price = $p;
             }
