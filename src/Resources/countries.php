@@ -29,7 +29,7 @@ return [
     'BMU' => 'Bermuda',
     'BGR' => 'Bulgaria',
     'BOL' => 'Bolivia',
-    'BES' => '"Bonaire, Sint Eustatius and Saba"',
+    'BES' => 'Bonaire, Sint Eustatius and Saba',
     'BIH' => 'Bosnia and Herzegovina',
     'BWA' => 'Botswana',
     'BRA' => 'Brazil',
@@ -256,4 +256,5 @@ return [
     'CPT' => 'Clipperton Island',
     'DGA' => 'Diego Garcia',
     'TAA' => 'Tristan da Cunha',
+    'UNK' => 'Kosovo',
 ];

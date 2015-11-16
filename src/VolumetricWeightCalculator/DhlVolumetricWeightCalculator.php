@@ -3,8 +3,8 @@
 namespace EsteIt\ShippingCalculator\VolumetricWeightCalculator;
 
 use EsteIt\ShippingCalculator\Model\DimensionsInterface;
-use EsteIt\ShippingCalculator\Model\VolumetricWeight;
-use EsteIt\ShippingCalculator\Model\VolumetricWeightInterface;
+use EsteIt\ShippingCalculator\Model\Weight;
+use EsteIt\ShippingCalculator\Model\WeightInterface;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\WeightConverter;
 use Moriony\Trivial\Math\MathInterface;
@@ -22,18 +22,32 @@ class DhlVolumetricWeightCalculator implements VolumetricWeightCalculatorInterfa
     protected $math;
     protected $weightConverter;
     protected $lengthConverter;
+    protected $factor;
 
     public function __construct(MathInterface $math, WeightConverter $weightConverter, LengthConverter $lengthConverter)
     {
         $this->math = $math;
         $this->lengthConverter = $lengthConverter;
         $this->weightConverter = $weightConverter;
+        $this->factor = 5000;
+    }
+
+    public function setFactor($factor)
+    {
+        $this->factor = $factor;
+
+        return $this;
+    }
+
+    public function getFactor()
+    {
+        return $this->factor;
     }
 
     /**
      * @param DimensionsInterface $dimensions
      * @param string $toWeightUnit
-     * @return VolumetricWeightInterface
+     * @return WeightInterface
      */
     public function calculate(DimensionsInterface $dimensions, $toWeightUnit)
     {
@@ -45,13 +59,12 @@ class DhlVolumetricWeightCalculator implements VolumetricWeightCalculatorInterfa
         $volume = $this->math->mul($volume, $width);
         $volume = $this->math->mul($volume, $height);
 
-        $value = $this->math->div($volume, 5000);
+        $value = $this->math->div($volume, $this->getFactor());
         $value = $this->weightConverter->convert($value, WeightUnits::KG, $toWeightUnit);
         $value = $this->math->roundUp($value, 3);
 
-        $volumetricWeight = new VolumetricWeight();
-        $volumetricWeight->setMassUnit($toWeightUnit);
-        $volumetricWeight->setDimensionsUnit($dimensions->getUnit());
+        $volumetricWeight = new Weight();
+        $volumetricWeight->setUnit($toWeightUnit);
         $volumetricWeight->setValue($value);
 
         return $volumetricWeight;

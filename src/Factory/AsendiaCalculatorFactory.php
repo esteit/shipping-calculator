@@ -2,92 +2,81 @@
 
 namespace EsteIt\ShippingCalculator\Factory;
 
+use EsteIt\ShippingCalculator\Calculator\Asendia\ZoneCalculator;
 use EsteIt\ShippingCalculator\Configuration\AsendiaConfiguration;
-use EsteIt\ShippingCalculator\Calculator\Asendia\PriceGroup;
-use EsteIt\ShippingCalculator\Calculator\Asendia\RecipientCountry;
-use EsteIt\ShippingCalculator\Calculator\Asendia\Tariff;
 use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
+use EsteIt\ShippingCalculator\Model\ExportCountry;
+use EsteIt\ShippingCalculator\Model\ImportCountry;
 use Symfony\Component\Config\Definition\Processor;
+use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
-/**
- * Class AsendiaCalculatorFactory
- */
 class AsendiaCalculatorFactory
 {
     public function create(array $config)
     {
         $config = $this->processConfig($config);
-
-        $tariffs = $this->createTariffs($config['tariffs']);
-
-        $calculator = new AsendiaCalculator();
-        $calculator->addTariffs($tariffs);
-
-        return $calculator;
-    }
-
-    protected function createTariffs(array $tariffsConfig)
-    {
-        $tariffs = [];
-
-        foreach ($tariffsConfig as $tariffConfig) {
-            $recipientCountries = $this->createRecipientCountries($tariffConfig['recipient_countries']);
-            $priceGroups = $this->createPriceGroups($tariffConfig['price_groups']);
-
-            $tariff = new Tariff();
-            $tariff->setDate(new \DateTime($tariffConfig['date']));
-            $tariff->addRecipientCountries($recipientCountries);
-            $tariff->addPriceGroups($priceGroups);
-            $tariff->setFuelSubcharge($tariffConfig['fuel_subcharge']);
-            $tariff->setMassUnit($tariffConfig['mass_unit']);
-            $tariff->setCurrency($tariffConfig['currency']);
-            $tariff->setDimensionsUnit($tariffConfig['dimensions_unit']);
-            $tariff->setSideLengthLimit($tariffConfig['side_length_limit']);
-            $tariff->setGirthLimit($tariffConfig['girth_limit']);
-
-            $tariffs[] = $tariff;
-        }
-
-        return $tariffs;
-    }
-
-    protected function createRecipientCountries(array $recipientCountriesConfig)
-    {
-        $recipientCountries = [];
-        foreach ($recipientCountriesConfig as $countryConfig) {
-            $recipientCountry = new RecipientCountry();
-            $recipientCountry->setCode($countryConfig['code']);
-            $recipientCountry->setPriceGroup($countryConfig['price_group']);
-            $recipientCountry->setWeightLimit($countryConfig['weight_limit']);
-
-            $recipientCountries[] = $recipientCountry;
-        }
-
-        return $recipientCountries;
-    }
-
-    protected function createPriceGroups(array $priceGroupsConfig)
-    {
-        $priceGroups = [];
-
-        foreach ($priceGroupsConfig as $priceGroupConfig) {
-            $priceGroup = new PriceGroup();
-            $priceGroup->setName($priceGroupConfig['name']);
-            foreach ($priceGroupConfig['prices'] as $priceConfig) {
-                $priceGroup->setPrice($priceConfig['weight'], $priceConfig['price']);
-            }
-            $priceGroups[] = $priceGroup;
-        }
-
-        return $priceGroups;
+        $config = $this->normalizeConfig($config);
+        return new AsendiaCalculator($config);
     }
 
     protected function processConfig(array $config)
     {
         $processor = new Processor();
-        $configuration = new AsendiaConfiguration();
-        $processedConfig = $processor->processConfiguration($configuration, [$config]);
+        $processedConfig = $processor->processConfiguration(new AsendiaConfiguration(), [$config]);
 
         return $processedConfig;
+    }
+
+    protected function normalizeConfig(array $config)
+    {
+        $resolver = new OptionsResolver();
+        $resolver->setRequired([
+            'currency',
+            'dimensions_unit',
+            'fuel_subcharge',
+            'mass_unit',
+            'maximum_dimension',
+            'maximum_girth',
+            'export_countries',
+            'import_countries',
+            'zone_calculators',
+        ]);
+
+        $exportCountriesNormalizer = function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $config) {
+                $country = new ExportCountry();
+                $country->setCode($config['code']);
+                $normalized[] = $country;
+            }
+            return $normalized;
+        };
+
+        $importCountriesNormalizer = function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $config) {
+                $country = new ImportCountry();
+                $country->setCode($config['code']);
+                $country->setZone($config['zone']);
+                $country->setMaximumWeight($config['maximum_weight']);
+                $normalized[] = $country;
+            }
+            return $normalized;
+        };
+
+        $zoneCalculatorsNormalizer = function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $config) {
+                $normalized[] = new ZoneCalculator($config);
+            }
+            return $normalized;
+        };
+
+        $resolver->setNormalizer('export_countries', $exportCountriesNormalizer);
+        $resolver->setNormalizer('import_countries', $importCountriesNormalizer);
+        $resolver->setNormalizer('zone_calculators', $zoneCalculatorsNormalizer);
+
+        return $resolver->resolve($config);
     }
 }

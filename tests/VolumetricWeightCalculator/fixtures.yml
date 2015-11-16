@@ -1,0 +1,31 @@
+EsteIt\ShippingCalculator\Model\Dimensions:
+  dimensions_100_100_100_cm:
+    length: 100
+    width: 100
+    height: 100
+    unit: cm
+  dimensions_1_1_1_m:
+    length: 1
+    width: 1
+    height: 1
+    unit: m
+  dimensions_box_39.37in:
+    length: 39.37
+    width: 39.37
+    height: 39.37
+    unit: in
+  dimensions_box_100in:
+    length: 100
+    width: 100
+    height: 100
+    unit: in
+  dimensions_box_10in:
+    length: 10
+    width: 10
+    height: 10
+    unit: in
+  dimensions_100_10_10_in:
+    length: 100
+    width: 10
+    height: 10
+    unit: in

@@ -15,12 +15,17 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * Class AbstractCalculator
  */
-abstract class AbstractCalculator
+abstract class AbstractCalculator implements CalculatorInterface
 {
     /**
      * @var EventDispatcherInterface
      */
     protected $dispatcher;
+
+    /**
+     * @var array
+     */
+    protected $options;
 
     /**
      * @var string
@@ -115,4 +120,21 @@ abstract class AbstractCalculator
      * @return int|float|string
      */
     abstract public function visit(CalculationResultInterface $result, PackageInterface $package);
+
+    /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param mixed $name
+     * @return mixed null
+     */
+    public function getOption($name)
+    {
+        return array_key_exists($name, $this->options) ? $this->options[$name] : null;
+    }
 }

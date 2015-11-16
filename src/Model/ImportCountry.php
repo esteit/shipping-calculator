@@ -1,21 +1,21 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Calculator\Asendia;
+namespace EsteIt\ShippingCalculator\Model;
 
 /**
- * Class RecipientCountry
+ * Class ImportCountry
  */
-class RecipientCountry
+class ImportCountry
 {
     /**
      * @var string|int
      */
-    protected $priceGroup;
+    protected $zone;
 
     /**
      * @var string|float|int
      */
-    protected $weightLimit;
+    protected $maximumWeight;
 
     /**
      * @var string
@@ -44,18 +44,18 @@ class RecipientCountry
     /**
      * @return string
      */
-    public function getPriceGroup()
+    public function getZone()
     {
-        return $this->priceGroup;
+        return $this->zone;
     }
 
     /**
-     * @param string|int $priceGroup
+     * @param string|int $zone
      * @return $this
      */
-    public function setPriceGroup($priceGroup)
+    public function setZone($zone)
     {
-        $this->priceGroup = $priceGroup;
+        $this->zone = $zone;
 
         return $this;
     }
@@ -63,18 +63,18 @@ class RecipientCountry
     /**
      * @return mixed
      */
-    public function getWeightLimit()
+    public function getMaximumWeight()
     {
-        return $this->weightLimit;
+        return $this->maximumWeight;
     }
 
     /**
-     * @param string|float|int $weightLimit
+     * @param string|float|int $maximumWeight
      * @return $this
      */
-    public function setWeightLimit($weightLimit)
+    public function setMaximumWeight($maximumWeight)
     {
-        $this->weightLimit = $weightLimit;
+        $this->maximumWeight = $maximumWeight;
 
         return $this;
     }

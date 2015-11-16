@@ -2,6 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Calculator;
 
+use EsteIt\ShippingCalculator\Calculator\Asendia\ZoneCalculator;
 use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
 
 /**
@@ -25,83 +26,112 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
         return $this->fixtures[$name];
     }
 
-    /**
-     * @dataProvider provideGetTariff
-     */
-    public function testGetTariff($tariffs)
-    {
-        $calculator = new AsendiaCalculator();
-        $calculator->addTariffs($tariffs);
-
-        $now = new \DateTime();
-        $tariff = $calculator->getTariff($now);
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Calculator\Asendia\Tariff', $tariff);
-
-        $this->assertLessThanOrEqual($now, $tariff->getDate());
-        $this->assertEquals('0.07', $tariff->getFuelSubcharge());
-        $this->assertEquals('USD', $tariff->getCurrency());
-    }
-
-    /**
-     * @dataProvider provideGetTariffException
-     */
-    public function testGetTariffException($exceptionClass, $exceptionMessage)
-    {
-        $this->setExpectedException($exceptionClass, $exceptionMessage);
-
-        $calculator = new AsendiaCalculator();
-        $calculator->getTariff(new \DateTime());
-    }
-
     public function testCalculate()
     {
-        $deliveryMethod = new AsendiaCalculator();
-        $deliveryMethod->addTariff($this->getFixture('tariff_1'));
-        $package = $this->getFixture('base_package_1');
+        $zoneCalculator = new ZoneCalculator([
+            'name' => 1,
+            'weight_prices' => [
+                ['weight' =>  10, 'price' => 21.40]
+            ],
+        ]);
 
-        $result = $deliveryMethod->calculate($package);
+        $calculator = new AsendiaCalculator([
+            'zone_calculators' => [$zoneCalculator],
+            'import_countries' => [$this->getFixture('import_country_usa')],
+            'export_countries' => [$this->getFixture('export_country_usa')],
+            'fuel_subcharge' => 0.07,
+            'mass_unit' => 'lb',
+            'dimensions_unit' => 'in',
+            'maximum_dimension' => 41.338,
+            'maximum_girth' => 77.755,
+        ]);
+        $package = $this->getFixture('package_1');
+
+        $result = $calculator->calculate($package);
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
         $this->assertNull($result->getError());
         $this->assertSame('22.10', $result->getTotalCost());
-        $this->assertSame($deliveryMethod, $result->getCalculator());
+        $this->assertSame($calculator, $result->getCalculator());
         $this->assertSame($package, $result->getPackage());
         $this->assertSame('USD', $result->getCurrency());
     }
 
     /**
+     * @dataProvider provideInvalidAddressesException
+     */
+    public function testValidateSenderAddressException($calculatorOptions, $address)
+    {
+        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
+
+        $calculator = new AsendiaCalculator($calculatorOptions);
+        $calculator->validateSenderAddress($address);
+    }
+
+    /**
+     * @dataProvider provideInvalidAddressesException
+     */
+    public function testValidateRecipientSenderAddressException($calculatorOptions, $address)
+    {
+        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
+
+        $calculator = new AsendiaCalculator($calculatorOptions);
+        $calculator->validateRecipientAddress($address);
+    }
+
+    /**
+     * @dataProvider provideValidateDimensionsException
+     */
+    public function testValidateDimensionsException($exceptionClass, $exceptionMessage, $calculatorOptions, $package)
+    {
+        $this->setExpectedException($exceptionClass, $exceptionMessage);
+
+        $calculator = new AsendiaCalculator($calculatorOptions);
+        $calculator->validateDimensions($package);
+    }
+
+    public function testValidateWeightException()
+    {
+        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', 'Sender country weight limit is exceeded.');
+
+        $calculator = new AsendiaCalculator([
+            'zone_calculators' => [],
+            'import_countries' => [$this->getFixture('import_country_usa')],
+            'export_countries' => [$this->getFixture('export_country_usa')],
+            'fuel_subcharge' => 0.07,
+            'mass_unit' => 'lb',
+            'dimensions_unit' => 'in',
+            'maximum_dimension' => 41.338,
+            'maximum_girth' => 77.755,
+        ]);
+
+        $calculator->validateWeight($this->getFixture('package_3'));
+    }
+
+    /**
      * @return array
      */
-    public function provideGetTariff()
+    public function provideInvalidAddressesException()
     {
+        $calculatorOptions = [
+            'zone_calculators' => [],
+            'import_countries' => [$this->getFixture('import_country_usa')],
+            'export_countries' => [$this->getFixture('export_country_usa')],
+            'fuel_subcharge' => 0.07,
+            'mass_unit' => 'lb',
+            'dimensions_unit' => 'in',
+            'maximum_dimension' => 41.338,
+            'maximum_girth' => 77.755,
+        ];
+
         return [
-            // One tariff
             [
-                [
-                    $this->getFixture('tariff_1'),
-                ],
+                $calculatorOptions,
+                $this->getFixture('french_address'),
             ],
-            // Two tariffs with one date
             [
-                [
-                    $this->getFixture('tariff_2'),
-                    $this->getFixture('tariff_3'),
-                ],
-            ],
-            // Two tariffs with different dates
-            [
-                [
-                    $this->getFixture('tariff_4'),
-                    $this->getFixture('tariff_5'),
-                ],
-            ],
-            // Three tariffs with different dates
-            [
-                [
-                    $this->getFixture('tariff_6'),
-                    $this->getFixture('tariff_7'),
-                    $this->getFixture('tariff_8'),
-                ],
+                $calculatorOptions,
+                $this->getFixture('russian_address'),
             ],
         ];
     }
@@ -109,12 +139,31 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    public function provideGetTariffException()
+    public function provideValidateDimensionsException()
     {
+        $calculatorOptions = [
+            'zone_calculators' => [],
+            'import_countries' => [$this->getFixture('import_country_usa')],
+            'export_countries' => [$this->getFixture('export_country_usa')],
+            'fuel_subcharge' => 0.07,
+            'mass_unit' => 'lb',
+            'dimensions_unit' => 'in',
+            'maximum_dimension' => 10,
+            'maximum_girth' => 10,
+        ];
+
         return [
             [
-                'EsteIt\ShippingCalculator\Exception\LogicException',
-                'Tariff was not found.',
+                'EsteIt\ShippingCalculator\Exception\InvalidDimensionsException',
+                'Side length limit is exceeded.',
+                $calculatorOptions,
+                $this->getFixture('package_2'),
+            ],
+            [
+                'EsteIt\ShippingCalculator\Exception\InvalidDimensionsException',
+                'Girth limit is exceeded.',
+                $calculatorOptions,
+                $this->getFixture('package_1'),
             ],
         ];
     }
