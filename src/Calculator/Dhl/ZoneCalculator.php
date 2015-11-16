@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Calculator\Asendia;
+namespace EsteIt\ShippingCalculator\Calculator\Dhl;
 
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use Moriony\Trivial\Math\MathInterface;
@@ -10,6 +10,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ZoneCalculator
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     /**
      * @var MathInterface
      */
@@ -21,11 +26,13 @@ class ZoneCalculator
         $resolver
             ->setDefaults([
                 'math' => new NativeMath(),
+                'overweight_rate_factor' => null,
             ])
             ->setRequired([
                 'math',
                 'name',
-                'weight_prices'
+                'weight_prices',
+                'overweight_rate_factor',
             ])
             ->setAllowedTypes([
                 'math' => 'Moriony\Trivial\Math\MathInterface',
@@ -55,15 +62,19 @@ class ZoneCalculator
     }
 
     /**
+     * @return mixed
+     */
+    public function getOverweightRateFactor()
+    {
+        return $this->options['overweight_rate_factor'];
+    }
+
+    /**
      * @return MathInterface
      */
     public function getMath()
     {
-        if (!$this->math) {
-            $this->math = new NativeMath();
-        }
-
-        return $this->math;
+        return $this->options['math'];
     }
 
     /**
@@ -90,6 +101,11 @@ class ZoneCalculator
                 $currentWeight = $w;
                 $price = $p;
             }
+        }
+
+        if (is_null($price) && $this->getOverweightRateFactor()) {
+            $currentWeight = $math->roundUp($weight);
+            $price = $math->mul($currentWeight, $this->getOverweightRateFactor());
         }
 
         if (is_null($price)) {

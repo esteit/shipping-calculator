@@ -122,11 +122,11 @@ abstract class AbstractCalculator implements CalculatorInterface
     abstract public function visit(CalculationResultInterface $result, PackageInterface $package);
 
     /**
-     * @return array
+     * @return mixed
      */
-    public function getOptions()
+    public function getExtraData()
     {
-        return $this->options;
+        return null;
     }
 
     /**
@@ -135,6 +135,6 @@ abstract class AbstractCalculator implements CalculatorInterface
      */
     public function getOption($name)
     {
-        return array_key_exists($name, $this->options) ? $this->options[$name] : null;
+        return $this->options && array_key_exists($name, $this->options) ? $this->options[$name] : null;
     }
 }

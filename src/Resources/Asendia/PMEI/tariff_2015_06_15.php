@@ -7,6 +7,9 @@ return [
     'maximum_dimension' => '59.055',
     'maximum_girth' => '98.425',
     'currency' => 'USD',
+    'extra_data' => [
+        'date' => '2015-08-25',
+    ],
     'export_countries' => [
         ['code' => 'USA'],
     ],

@@ -51,7 +51,6 @@ class UspsGirthCalculator implements GirthCalculatorInterface
         return $normalized;
     }
 
-
     /**
      * @param DimensionsInterface $dimensions
      * @return Girth

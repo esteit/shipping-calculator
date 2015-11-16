@@ -2,20 +2,22 @@
 
 namespace EsteIt\ShippingCalculator\Calculator;
 
-use EsteIt\ShippingCalculator\Calculator\Asendia\ZoneCalculator;
-use EsteIt\ShippingCalculator\Configuration\AsendiaConfiguration;
+use EsteIt\ShippingCalculator\Calculator\Dhl\ZoneCalculator;
+use EsteIt\ShippingCalculator\Configuration\DhlConfiguration;
 use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
 use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
 use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
-use EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator;
 use EsteIt\ShippingCalculator\Model\AddressInterface;
 use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
+use EsteIt\ShippingCalculator\Model\Dimensions;
+use EsteIt\ShippingCalculator\Model\DimensionsInterface;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
 use EsteIt\ShippingCalculator\Model\ImportCountry;
 use EsteIt\ShippingCalculator\Model\PackageInterface;
+use EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
 use Moriony\Trivial\Converter\WeightConverter;
@@ -25,12 +27,14 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AsendiaCalculator extends AbstractCalculator
+class DhlCalculator extends AbstractCalculator
 {
     public function __construct(array $options)
     {
         $math = new NativeMath();
         $resolver = new OptionsResolver();
+        $weightConverter = new WeightConverter($math);
+        $lengthConverter = new LengthConverter($math);
         $resolver
             ->setDefined([
                 'extra_data'
@@ -38,9 +42,9 @@ class AsendiaCalculator extends AbstractCalculator
             ->setDefaults([
                 'currency' => 'USD',
                 'math' => $math,
-                'weight_converter' => new WeightConverter($math),
-                'length_converter' => new LengthConverter($math),
-                'girth_calculator' => new UspsGirthCalculator($math),
+                'weight_converter' => $weightConverter,
+                'length_converter' => $lengthConverter,
+                'volumetric_weight_calculator' => new DhlVolumetricWeightCalculator($math, $weightConverter, $lengthConverter),
                 'extra_data' => null,
             ])
             ->setRequired([
@@ -48,14 +52,14 @@ class AsendiaCalculator extends AbstractCalculator
                 'import_countries',
                 'zone_calculators',
                 'currency',
-                'fuel_subcharge',
                 'math',
                 'weight_converter',
                 'length_converter',
                 'mass_unit',
                 'dimensions_unit',
-                'maximum_girth',
-                'maximum_dimension'
+                'maximum_weight',
+                'maximum_dimensions',
+                'volumetric_calculation_factor',
             ])
             ->setAllowedTypes([
                 'export_countries' => 'array',
@@ -65,23 +69,8 @@ class AsendiaCalculator extends AbstractCalculator
                 'math' => 'Moriony\Trivial\Math\MathInterface',
                 'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'girth_calculator' => 'EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator',
+                'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator',
             ]);
-
-        $importCountriesNormalizer = function (Options $options, $value) {
-            $normalized = [];
-            foreach ($value as $country) {
-                if (!$country instanceof ImportCountry) {
-                    $config = $country;
-                    $country = new ImportCountry();
-                    $country->setCode($config['code']);
-                    $country->setZone($config['zone']);
-                    $country->setMaximumWeight($config['maximum_weight']);
-                }
-                $normalized[$country->getCode()] = $country;
-            }
-            return $normalized;
-        };
 
         $exportCountriesNormalizer = function (Options $options, $value) {
             $normalized = [];
@@ -96,9 +85,23 @@ class AsendiaCalculator extends AbstractCalculator
             return $normalized;
         };
 
-        $zoneCalculatorsNormalizer = function (Options $options, $calculators) {
+        $importCountriesNormalizer = function (Options $options, $value) {
             $normalized = [];
-            foreach ($calculators as $calculator) {
+            foreach ($value as $country) {
+                if (!$country instanceof ImportCountry) {
+                    $config = $country;
+                    $country = new ImportCountry();
+                    $country->setCode($config['code']);
+                    $country->setZone($config['zone']);
+                }
+                $normalized[$country->getCode()] = $country;
+            }
+            return $normalized;
+        };
+
+        $zoneCalculatorsNormalizer = function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $calculator) {
                 if (!$calculator instanceof ZoneCalculator) {
                     $calculator = new ZoneCalculator($calculator);
                 }
@@ -107,9 +110,21 @@ class AsendiaCalculator extends AbstractCalculator
             return $normalized;
         };
 
-        $resolver->setNormalizer('import_countries', $importCountriesNormalizer);
+        $dimensionsNormalizer = function (Options $options, $value) {
+            if (!$value instanceof DimensionsInterface) {
+                $config = $value;
+                $value = new Dimensions();
+                $value->setLength($config['length']);
+                $value->setWidth($config['width']);
+                $value->setHeight($config['height']);
+            }
+            return $value;
+        };
+
         $resolver->setNormalizer('export_countries', $exportCountriesNormalizer);
+        $resolver->setNormalizer('import_countries', $importCountriesNormalizer);
         $resolver->setNormalizer('zone_calculators', $zoneCalculatorsNormalizer);
+        $resolver->setNormalizer('maximum_dimensions', $dimensionsNormalizer);
 
         $this->options = $resolver->resolve($options);
     }
@@ -130,12 +145,15 @@ class AsendiaCalculator extends AbstractCalculator
 
         $weight = $package->getWeight();
         $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->getOption('mass_unit'));
+        $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions(), $this->getOption('mass_unit'));
 
         $math = $this->getMath();
-        $cost = $zoneCalculator->calculate($weight);
-        $wholeWeight = $math->roundUp($weight);
-        $fuelCost = $math->mul($wholeWeight, $this->getOption('fuel_subcharge'));
-        $total = $math->sum($cost, $fuelCost);
+        if ($math->greaterThan($volumetricWeight, $weight)) {
+            $weight = $volumetricWeight;
+        }
+
+        $math = $this->getMath();
+        $total = $zoneCalculator->calculate($weight);
         $total = $math->roundUp($total, 2);
         $total = number_format($total, 2, '.', '');
 
@@ -178,18 +196,23 @@ class AsendiaCalculator extends AbstractCalculator
     {
         $math = $this->getMath();
         $converter = $this->getLengthConverter();
-        $girthCalculator = $this->getGirthCalculator();
 
-        $dimensions = $girthCalculator->normalizeDimensions($package->getDimensions());
-        $maximumDimension = $converter->convert($this->getOption('maximum_dimension'), $this->getOption('dimensions_unit'), $dimensions->getUnit());
-        if ($math->greaterThan($dimensions->getLength(), $maximumDimension)) {
-            throw new InvalidDimensionsException('Side length limit is exceeded.');
+        $maxDimensions = $this->normalizeDimensions($this->getOption('maximum_dimensions'));
+        $dimensions = $this->normalizeDimensions($package->getDimensions());
+
+        $maxLength = $converter->convert($maxDimensions->getLength(), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        if ($math->greaterThan($dimensions->getLength(), $maxLength)) {
+            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
         }
 
-        $girth = $girthCalculator->calculate($dimensions);
-        $maxGirth = $converter->convert($this->getOption('maximum_girth'), $this->getOption('dimensions_unit'), $dimensions->getUnit());
-        if ($math->greaterThan($girth->getValue(), $maxGirth)) {
-            throw new InvalidDimensionsException('Girth limit is exceeded.');
+        $maxWidth = $converter->convert($maxDimensions->getWidth(), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        if ($math->greaterThan($dimensions->getWidth(), $maxWidth)) {
+            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
+        }
+
+        $maxHeight = $converter->convert($maxDimensions->getHeight(), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        if ($math->greaterThan($dimensions->getHeight(), $maxHeight)) {
+            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
         }
     }
 
@@ -197,10 +220,9 @@ class AsendiaCalculator extends AbstractCalculator
     {
         $math = $this->getMath();
         $converter = $this->getWeightConverter();
-        $country = $this->getImportCountry($package->getRecipientAddress()->getCountryCode());
 
-        $countryMaxWeight = $converter->convert($country->getMaximumWeight(), $this->getOption('mass_unit'), $package->getWeight()->getUnit());
-        if ($math->greaterThan($package->getWeight()->getValue(), $countryMaxWeight)) {
+        $maxWeight = $converter->convert($this->getOption('maximum_weight'), $this->getOption('mass_unit'), $package->getWeight()->getUnit());
+        if ($math->greaterThan($package->getWeight()->getValue(), $maxWeight)) {
             throw new InvalidWeightException('Sender country weight limit is exceeded.');
         }
     }
@@ -249,17 +271,49 @@ class AsendiaCalculator extends AbstractCalculator
         return $countries[$code];
     }
 
+    /**
+     * @param DimensionsInterface $dimensions
+     * @return Dimensions
+     */
+    public function normalizeDimensions(DimensionsInterface $dimensions)
+    {
+        $math = $this->getMath();
+        $values = [$dimensions->getLength()];
+
+        if ($math->greaterThan($dimensions->getWidth(), reset($values))) {
+            array_unshift($values, $dimensions->getWidth());
+        } else {
+            $values[] = $dimensions->getWidth();
+        }
+
+        if ($math->greaterThan($dimensions->getHeight(), reset($values))) {
+            array_unshift($values, $dimensions->getHeight());
+        } else {
+            $values[] = $dimensions->getHeight();
+        }
+
+        $normalized = new Dimensions();
+        $normalized->setUnit($dimensions->getUnit());
+        $normalized->setLength(reset($values));
+        $normalized->setWidth(next($values));
+        $normalized->setHeight(next($values));
+
+        return $normalized;
+    }
+
     public static function create(array $config)
     {
         $processor = new Processor();
-        $processedConfig = $processor->processConfiguration(new AsendiaConfiguration(), [$config]);
-
+        $processedConfig = $processor->processConfiguration(new DhlConfiguration(), [$config]);
         return new static($processedConfig);
     }
 
-    protected function processConfig(array $config)
+    /**
+     * @return mixed
+     */
+    public function getExtraData()
     {
-
+        return $this->getOption('extra_data');
     }
 
     /**
@@ -286,19 +340,12 @@ class AsendiaCalculator extends AbstractCalculator
         return $this->getOption('weight_converter');
     }
 
-    /**
-     * @return UspsGirthCalculator
-     */
-    protected function getGirthCalculator()
-    {
-        return $this->getOption('girth_calculator');
-    }
 
     /**
-     * @return mixed
+     * @return DhlVolumetricWeightCalculator
      */
-    public function getExtraData()
+    protected function getVolumetricWeightCalculator()
     {
-        return $this->getOption('extra_data');
+        return $this->getOption('volumetric_weight_calculator');
     }
 }

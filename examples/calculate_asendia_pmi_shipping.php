@@ -1,6 +1,6 @@
 <?php
 
-use EsteIt\ShippingCalculator\Factory\AsendiaCalculatorFactory;
+use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
 use EsteIt\ShippingCalculator\Model\Weight;
 use EsteIt\ShippingCalculator\Model\Dimensions;
 use EsteIt\ShippingCalculator\Model\Address;
@@ -10,8 +10,8 @@ include_once __DIR__.'/../vendor/autoload.php';
 
 $config = include __DIR__.'/../src/Resources/Asendia/PMEI/tariff_2015_06_15.php';
 
-$factory = new AsendiaCalculatorFactory();
-$calculator = $factory->create($config);
+
+$calculator = AsendiaCalculator::create($config);
 
 $weight = new Weight();
 $weight->setValue(10);

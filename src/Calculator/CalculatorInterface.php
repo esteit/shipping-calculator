@@ -14,7 +14,7 @@ interface CalculatorInterface
     public function calculate(PackageInterface $package);
 
     /**
-     * @return array
+     * @return mixed
      */
-    public function getOptions();
+    public function getExtraData();
 }

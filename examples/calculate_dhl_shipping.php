@@ -1,29 +1,34 @@
 <?php
 
+use EsteIt\ShippingCalculator\Calculator\DhlCalculator;
+use EsteIt\ShippingCalculator\Model\Weight;
+use EsteIt\ShippingCalculator\Model\Dimensions;
+use EsteIt\ShippingCalculator\Model\Address;
+use EsteIt\ShippingCalculator\Model\Package;
+
 include_once __DIR__.'/../vendor/autoload.php';
 
-$config = include __DIR__.'/../src/Resources/Asendia/PMI/index.php';
+$config = include __DIR__.'/../src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php';
 
-$factory = new \EsteIt\ShippingCalculator\Factory\AsendiaCalculatorFactory();
-$calculator = $factory->create($config);
+$calculator = DhlCalculator::create($config);
 
-$weight = new \EsteIt\ShippingCalculator\Model\Weight();
+$weight = new Weight();
 $weight->setValue(10);
 $weight->setUnit('lb');
 
-$dimensions = new \EsteIt\ShippingCalculator\Model\Dimensions();
+$dimensions = new Dimensions();
 $dimensions->setLength(10);
 $dimensions->setWidth(10);
 $dimensions->setHeight(10);
 $dimensions->setUnit('in');
 
-$senderAddress = new \EsteIt\ShippingCalculator\Model\Address();
+$senderAddress = new Address();
 $senderAddress->setCountryCode('USA');
 
-$recipientAddress = new \EsteIt\ShippingCalculator\Model\Address();
+$recipientAddress = new Address();
 $recipientAddress->setCountryCode('RUS');
 
-$package = new \EsteIt\ShippingCalculator\Model\Package();
+$package = new Package();
 $package->setCalculationDate(new \DateTime());
 $package->setWeight($weight);
 $package->setDimensions($dimensions);
