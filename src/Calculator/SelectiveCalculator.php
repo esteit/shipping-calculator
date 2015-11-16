@@ -34,8 +34,7 @@ class SelectiveCalculator extends AbstractCalculator
     public function visit(CalculationResultInterface $result, PackageInterface $package)
     {
         $calculator = $this->getCalculators()->filter($this->getFilter())->first();
-        $result->setTotalCost($calculator->calculate($package));
-        $result->setCurrency($calculator->getCurrency());
+        return $calculator->calculate($package);
     }
 
     /**

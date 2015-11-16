@@ -154,8 +154,6 @@ class DhlCalculator extends AbstractCalculator
 
         $math = $this->getMath();
         $total = $zoneCalculator->calculate($weight);
-        $total = $math->roundUp($total, 2);
-        $total = number_format($total, 2, '.', '');
 
         $result->setTotalCost($total);
         $result->setCurrency($this->getOption('currency'));

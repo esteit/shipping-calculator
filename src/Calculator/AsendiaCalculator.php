@@ -136,8 +136,6 @@ class AsendiaCalculator extends AbstractCalculator
         $wholeWeight = $math->roundUp($weight);
         $fuelCost = $math->mul($wholeWeight, $this->getOption('fuel_subcharge'));
         $total = $math->sum($cost, $fuelCost);
-        $total = $math->roundUp($total, 2);
-        $total = number_format($total, 2, '.', '');
 
         $result->setTotalCost($total);
         $result->setCurrency($this->getOption('currency'));

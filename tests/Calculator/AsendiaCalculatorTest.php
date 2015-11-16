@@ -51,7 +51,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
         $this->assertNull($result->getError());
-        $this->assertSame('22.10', $result->getTotalCost());
+        $this->assertSame(22.1, $result->getTotalCost());
         $this->assertSame($calculator, $result->getCalculator());
         $this->assertSame($package, $result->getPackage());
         $this->assertSame('USD', $result->getCurrency());
