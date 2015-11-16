@@ -7,9 +7,6 @@ use EsteIt\ShippingCalculator\Model\DimensionsInterface;
 use EsteIt\ShippingCalculator\Model\Girth;
 use Moriony\Trivial\Math\MathInterface;
 
-/**
- * Class UspsGirthCalculator
- */
 class UspsGirthCalculator implements GirthCalculatorInterface
 {
     /**

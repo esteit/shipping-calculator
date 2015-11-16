@@ -64,3 +64,11 @@ EsteIt\ShippingCalculator\Model\Package:
     recipientAddress: @usa_address
     weight: @weight_100_lb
     dimensions: @dimensions_11_10_10_in
+  package_4:
+    recipientAddress: @russian_address
+    weight: @weight_10_lb
+    dimensions: @dimensions_10_11_10_in
+  package_5:
+    recipientAddress: @russian_address
+    weight: @weight_10_lb
+    dimensions: @dimensions_10_10_11_in

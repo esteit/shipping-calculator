@@ -2,9 +2,6 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-/**
- * Class Address
- */
 class Address implements AddressInterface
 {
     protected $countryCode;

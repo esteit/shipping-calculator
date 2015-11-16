@@ -26,7 +26,6 @@ class DhlConfiguration implements ConfigurationInterface
                         ->scalarNode('height')->end()
                     ->end()
                 ->end()
-                ->scalarNode('volumetric_calculation_factor')->end()
                 ->arrayNode('export_countries')
                     ->prototype('array')
                         ->children()

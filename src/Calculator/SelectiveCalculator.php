@@ -8,9 +8,6 @@ use Moriony\Trivial\Collection\CollectionInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Closure;
 
-/**
- * Class SelectiveCalculator
- */
 class SelectiveCalculator extends AbstractCalculator
 {
     protected $options;

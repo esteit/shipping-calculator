@@ -2,9 +2,6 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-/**
- * Class Girth
- */
 class Girth implements GirthInterface
 {
     protected $value;

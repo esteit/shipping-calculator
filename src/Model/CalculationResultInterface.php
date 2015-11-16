@@ -5,9 +5,6 @@ namespace EsteIt\ShippingCalculator\Model;
 use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 
-/**
- * Class CalculationResultInterface
- */
 interface CalculationResultInterface
 {
     /**

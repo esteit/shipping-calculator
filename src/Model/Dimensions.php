@@ -2,9 +2,6 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-/**
- * Class Dimensions
- */
 class Dimensions implements DimensionsInterface
 {
     protected $length;

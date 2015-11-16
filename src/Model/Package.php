@@ -2,9 +2,6 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-/**
- * Class Package
- */
 class Package implements PackageInterface
 {
     protected $weight;

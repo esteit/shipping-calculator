@@ -6,9 +6,6 @@ use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Model\PackageInterface;
 use Symfony\Component\EventDispatcher\Event;
 
-/**
- * Class BeforeCalculateEvent
- */
 class BeforeCalculateEvent extends Event
 {
     /**

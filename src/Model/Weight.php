@@ -2,9 +2,6 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-/**
- * Class Weight
- */
 class Weight implements WeightInterface
 {
     protected $value;

@@ -59,7 +59,6 @@ class DhlCalculator extends AbstractCalculator
                 'dimensions_unit',
                 'maximum_weight',
                 'maximum_dimensions',
-                'volumetric_calculation_factor',
             ])
             ->setAllowedTypes([
                 'export_countries' => 'array',
@@ -114,9 +113,9 @@ class DhlCalculator extends AbstractCalculator
             if (!$value instanceof DimensionsInterface) {
                 $config = $value;
                 $value = new Dimensions();
-                $value->setLength($config['length']);
-                $value->setWidth($config['width']);
-                $value->setHeight($config['height']);
+                $value->setLength(reset($config));
+                $value->setWidth(next($config));
+                $value->setHeight(next($config));
             }
             return $value;
         };
@@ -141,8 +140,6 @@ class DhlCalculator extends AbstractCalculator
         $this->validateDimensions($package);
         $this->validateWeight($package);
 
-        $zoneCalculator = $this->getZoneCalculator($package);
-
         $weight = $package->getWeight();
         $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->getOption('mass_unit'));
         $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions(), $this->getOption('mass_unit'));
@@ -152,7 +149,7 @@ class DhlCalculator extends AbstractCalculator
             $weight = $volumetricWeight;
         }
 
-        $math = $this->getMath();
+        $zoneCalculator = $this->getZoneCalculator($package);
         $total = $zoneCalculator->calculate($weight);
 
         $result->setTotalCost($total);

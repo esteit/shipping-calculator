@@ -9,9 +9,6 @@ use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Unit\LengthUnits;
 use Moriony\Trivial\Unit\WeightUnits;
 
-/**
- * Class DhlVolumetricWeightCalculator
- */
 class DhlVolumetricWeightCalculator implements VolumetricWeightCalculatorInterface
 {
     /**

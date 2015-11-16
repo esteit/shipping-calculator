@@ -2,9 +2,6 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-/**
- * Class ImportCountry
- */
 class ImportCountry
 {
     /**
