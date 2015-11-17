@@ -322,7 +322,6 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
                     $country = new ImportCountry();
                     $country->setCode($config['code']);
                     $country->setZone($config['zone']);
-                    $country->setMaximumWeight($config['maximum_weight']);
                 }
                 $normalized[$country->getCode()] = $country;
             }
