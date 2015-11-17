@@ -10,9 +10,8 @@ return [
         'width' => '31.4961',
         'height' => '31.4961',
     ],
-    'volumetric_calculation_factor' => 5000,
     'extra_data' => [
-        'issued_at' => '2015-08-25',
+        'date' => '2015-08-25',
     ],
     'export_countries' => [
         ['code' => 'USA'],

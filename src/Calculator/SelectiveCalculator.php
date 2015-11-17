@@ -2,6 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Calculator;
 
+use EsteIt\ShippingCalculator\Exception\LogicException;
 use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
 use EsteIt\ShippingCalculator\Model\PackageInterface;
 use Moriony\Trivial\Collection\CollectionInterface;
@@ -18,11 +19,11 @@ class SelectiveCalculator extends AbstractCalculator
         $resolver
             ->setRequired([
                 'calculators',
-                'filter'
+                'selector'
             ])
             ->setAllowedTypes([
                 'calculators' => 'Moriony\Trivial\Collection\CollectionInterface',
-                'filter' => 'Closure',
+                'selector' => 'Closure',
             ]);
 
         $this->options = $resolver->resolve($options);
@@ -30,8 +31,12 @@ class SelectiveCalculator extends AbstractCalculator
 
     public function visit(CalculationResultInterface $result, PackageInterface $package)
     {
-        $calculator = $this->getCalculators()->filter($this->getFilter())->first();
-        return $calculator->calculate($package);
+        $selector = $this->getSelector();
+        $calculator = $selector($this->getCalculators(), $package);
+        if (!$calculator instanceof CalculatorInterface) {
+            throw new LogicException('Calculator was not found.');
+        }
+        $calculator->visit($result, $package);
     }
 
     /**
@@ -39,18 +44,14 @@ class SelectiveCalculator extends AbstractCalculator
      */
     public function getCalculators()
     {
-        $this->options['calculators'];
-
-        return $this;
+        return $this->options['calculators'];
     }
 
     /**
      * @return Closure
      */
-    public function getFilter()
+    public function getSelector()
     {
-        $this->options['filter'];
-
-        return $this;
+        return $this->options['selector'];
     }
 }

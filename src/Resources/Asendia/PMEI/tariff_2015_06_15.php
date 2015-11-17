@@ -8,7 +8,7 @@ return [
     'maximum_girth' => '98.425',
     'currency' => 'USD',
     'extra_data' => [
-        'date' => '2015-08-25',
+        'date' => '2015-06-15',
     ],
     'export_countries' => [
         ['code' => 'USA'],
