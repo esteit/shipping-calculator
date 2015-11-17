@@ -2,7 +2,6 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 
 interface CalculationResultInterface
@@ -28,17 +27,6 @@ interface CalculationResultInterface
      * @return string|int|float
      */
     public function getTotalCost();
-
-    /**
-     * @param AbstractCalculator $calculator
-     * @return $this
-     */
-    public function setCalculator(AbstractCalculator $calculator);
-
-    /**
-     * @return AbstractCalculator
-     */
-    public function getCalculator();
 
     /**
      * @param PackageInterface $package

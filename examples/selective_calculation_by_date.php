@@ -1,45 +1,43 @@
 <?php
 
-use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
+use EsteIt\ShippingCalculator\CalculatorHandler\AsendiaCalculatorHandler;;
+use EsteIt\ShippingCalculator\CalculatorHandler\DhlCalculatorHandler;
 use EsteIt\ShippingCalculator\Model\Weight;
 use EsteIt\ShippingCalculator\Model\Dimensions;
 use EsteIt\ShippingCalculator\Model\Address;
 use EsteIt\ShippingCalculator\Model\Package;
-use EsteIt\ShippingCalculator\Collection\CalculatorCollection;
 use EsteIt\ShippingCalculator\Calculator\SelectiveCalculator;
-use EsteIt\ShippingCalculator\Calculator\DhlCalculator;
 use EsteIt\ShippingCalculator\Model\PackageInterface;
 use EsteIt\ShippingCalculator\Calculator\CalculatorInterface;
+use EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface;
 
 include_once __DIR__.'/../vendor/autoload.php';
 
 $config1 = include __DIR__.'/../src/Resources/Asendia/PMI/tariff_2015_06_15.php';
 $config2 = include __DIR__.'/../src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php';
 
-$collection = new CalculatorCollection([
-    AsendiaCalculator::create($config1),
-    DhlCalculator::create($config2)
-]);
-
-// This \Closure will find actual calculator by date from `extra_data`
-$selector = function (CalculatorCollection $calculators, PackageInterface $package) {
-    /** @var CalculatorInterface $currentCalculator */
-    $currentCalculator = null;
+// This \Closure will find actual handler by date from handler's extra data
+$selector = function ($handlers, PackageInterface $package) {
+    /** @var CalculatorInterface $currentHandler */
+    $currentHandler = null;
     $currentDate = null;
 
-    /** @var CalculatorInterface $calculator */
-    foreach ($calculators as $calculator) {
-        $extraData = $calculator->getExtraData();
+    /** @var CalculatorHandlerInterface $handler */
+    foreach ($handlers as $handler) {
+        $extraData = $handler->get('extra_data');
         $date = new \DateTime($extraData['date']);
-        if ($package->getCalculationDate() >= $date && (is_null($currentCalculator) || $date > $currentDate)) {
-            $currentCalculator = $calculator;
+        if ($package->getCalculationDate() >= $date && (is_null($currentHandler) || $date > $currentDate)) {
+            $currentHandler = $handler;
         }
     }
-    return $currentCalculator;
+    return $currentHandler;
 };
 
 $calculator = new SelectiveCalculator([
-    'calculators' => $collection,
+    'handlers' => [
+        AsendiaCalculatorHandler::create($config1),
+        DhlCalculatorHandler::create($config2)
+    ],
     'selector' => $selector
 ]);
 

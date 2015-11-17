@@ -2,13 +2,13 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Calculator;
 
-use EsteIt\ShippingCalculator\Calculator\Asendia\ZoneCalculator;
-use EsteIt\ShippingCalculator\Calculator\AsendiaCalculator;
+use EsteIt\ShippingCalculator\CalculatorHandler\AsendiaCalculatorHandler;
+use EsteIt\ShippingCalculator\CalculatorHandler\Asendia\ZoneCalculator;
 
 /**
  * @group unit
  */
-class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
+class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
 
@@ -26,7 +26,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
         return $this->fixtures[$name];
     }
 
-    public function testCalculate()
+    public function testVisit()
     {
         $zoneCalculator = new ZoneCalculator([
             'name' => 1,
@@ -35,7 +35,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
             ],
         ]);
 
-        $calculator = new AsendiaCalculator([
+        $calculator = new AsendiaCalculatorHandler([
             'zone_calculators' => [$zoneCalculator],
             'import_countries' => [$this->getFixture('import_country_usa')],
             'export_countries' => [$this->getFixture('export_country_usa')],
@@ -46,14 +46,13 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
             'maximum_girth' => 77.755,
         ]);
         $package = $this->getFixture('package_1');
+        $result = $this->getFixture('empty_result');
 
-        $result = $calculator->calculate($package);
+        $calculator->visit($result, $package);
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
         $this->assertNull($result->getError());
         $this->assertSame(22.1, $result->getTotalCost());
-        $this->assertSame($calculator, $result->getCalculator());
-        $this->assertSame($package, $result->getPackage());
         $this->assertSame('USD', $result->getCurrency());
     }
 
@@ -64,18 +63,18 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
 
-        $calculator = new AsendiaCalculator($calculatorOptions);
+        $calculator = new AsendiaCalculatorHandler($calculatorOptions);
         $calculator->validateSenderAddress($address);
     }
 
     /**
      * @dataProvider provideInvalidAddressesException
      */
-    public function testValidateRecipientSenderAddressException($calculatorOptions, $address)
+    public function testValidateRecipientAddressException($calculatorOptions, $address)
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
 
-        $calculator = new AsendiaCalculator($calculatorOptions);
+        $calculator = new AsendiaCalculatorHandler($calculatorOptions);
         $calculator->validateRecipientAddress($address);
     }
 
@@ -86,7 +85,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException($exceptionClass, $exceptionMessage);
 
-        $calculator = new AsendiaCalculator($calculatorOptions);
+        $calculator = new AsendiaCalculatorHandler($calculatorOptions);
         $calculator->validateDimensions($package);
     }
 
@@ -94,7 +93,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', 'Sender country weight limit is exceeded.');
 
-        $calculator = new AsendiaCalculator([
+        $calculator = new AsendiaCalculatorHandler([
             'zone_calculators' => [],
             'import_countries' => [$this->getFixture('import_country_usa')],
             'export_countries' => [$this->getFixture('export_country_usa')],
@@ -116,7 +115,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
         $calculatorOptions = [
             'zone_calculators' => [],
             'import_countries' => [$this->getFixture('import_country_usa')],
-            'export_countries' => [$this->getFixture('export_country_usa')],
+            'export_countries' => [$this->getFixture('export_country_rus')],
             'fuel_subcharge' => 0.07,
             'mass_unit' => 'lb',
             'dimensions_unit' => 'in',
@@ -131,7 +130,7 @@ class AsendiaCalculatorTest extends \PHPUnit_Framework_TestCase
             ],
             [
                 $calculatorOptions,
-                $this->getFixture('russian_address'),
+                $this->getFixture('usa_address'),
             ],
         ];
     }

@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Calculator;
+namespace EsteIt\ShippingCalculator\CalculatorHandler;
 
-use EsteIt\ShippingCalculator\Calculator\Asendia\ZoneCalculator;
+use EsteIt\ShippingCalculator\CalculatorHandler\Asendia\ZoneCalculator;
 use EsteIt\ShippingCalculator\Configuration\AsendiaConfiguration;
 use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
 use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
@@ -25,8 +25,13 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AsendiaCalculator extends AbstractCalculator
+class AsendiaCalculatorHandler implements CalculatorHandlerInterface
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     public function __construct(array $options)
     {
         $math = new NativeMath();
@@ -68,48 +73,10 @@ class AsendiaCalculator extends AbstractCalculator
                 'girth_calculator' => 'EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator',
             ]);
 
-        $importCountriesNormalizer = function (Options $options, $value) {
-            $normalized = [];
-            foreach ($value as $country) {
-                if (!$country instanceof ImportCountry) {
-                    $config = $country;
-                    $country = new ImportCountry();
-                    $country->setCode($config['code']);
-                    $country->setZone($config['zone']);
-                    $country->setMaximumWeight($config['maximum_weight']);
-                }
-                $normalized[$country->getCode()] = $country;
-            }
-            return $normalized;
-        };
 
-        $exportCountriesNormalizer = function (Options $options, $value) {
-            $normalized = [];
-            foreach ($value as $country) {
-                if (!$country instanceof ExportCountry) {
-                    $config = $country;
-                    $country = new ExportCountry();
-                    $country->setCode($config['code']);
-                }
-                $normalized[$country->getCode()] = $country;
-            }
-            return $normalized;
-        };
-
-        $zoneCalculatorsNormalizer = function (Options $options, $calculators) {
-            $normalized = [];
-            foreach ($calculators as $calculator) {
-                if (!$calculator instanceof ZoneCalculator) {
-                    $calculator = new ZoneCalculator($calculator);
-                }
-                $normalized[$calculator->getName()] = $calculator;
-            }
-            return $normalized;
-        };
-
-        $resolver->setNormalizer('import_countries', $importCountriesNormalizer);
-        $resolver->setNormalizer('export_countries', $exportCountriesNormalizer);
-        $resolver->setNormalizer('zone_calculators', $zoneCalculatorsNormalizer);
+        $resolver->setNormalizer('import_countries', $this->createImportCountriesNormalizer());
+        $resolver->setNormalizer('export_countries', $this->createExportCountriesNormalizer());
+        $resolver->setNormalizer('zone_calculators', $this->createZoneCalculatorsNormalizer());
 
         $this->options = $resolver->resolve($options);
     }
@@ -129,16 +96,16 @@ class AsendiaCalculator extends AbstractCalculator
         $zoneCalculator = $this->getZoneCalculator($package);
 
         $weight = $package->getWeight();
-        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->getOption('mass_unit'));
+        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->get('mass_unit'));
 
         $math = $this->getMath();
         $cost = $zoneCalculator->calculate($weight);
         $wholeWeight = $math->roundUp($weight);
-        $fuelCost = $math->mul($wholeWeight, $this->getOption('fuel_subcharge'));
+        $fuelCost = $math->mul($wholeWeight, $this->get('fuel_subcharge'));
         $total = $math->sum($cost, $fuelCost);
 
         $result->setTotalCost($total);
-        $result->setCurrency($this->getOption('currency'));
+        $result->setCurrency($this->get('currency'));
     }
 
     /**
@@ -164,7 +131,7 @@ class AsendiaCalculator extends AbstractCalculator
             throw new InvalidRecipientAddressException('Can not send a package to this country.');
         }
 
-        if (!array_key_exists($importCountry->getZone(), $this->getOption('zone_calculators'))) {
+        if (!array_key_exists($importCountry->getZone(), $this->get('zone_calculators'))) {
             throw new InvalidRecipientAddressException('Can not send a package to this country.');
         }
     }
@@ -179,13 +146,13 @@ class AsendiaCalculator extends AbstractCalculator
         $girthCalculator = $this->getGirthCalculator();
 
         $dimensions = $girthCalculator->normalizeDimensions($package->getDimensions());
-        $maximumDimension = $converter->convert($this->getOption('maximum_dimension'), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        $maximumDimension = $converter->convert($this->get('maximum_dimension'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $maximumDimension)) {
             throw new InvalidDimensionsException('Side length limit is exceeded.');
         }
 
         $girth = $girthCalculator->calculate($dimensions);
-        $maxGirth = $converter->convert($this->getOption('maximum_girth'), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        $maxGirth = $converter->convert($this->get('maximum_girth'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($girth->getValue(), $maxGirth)) {
             throw new InvalidDimensionsException('Girth limit is exceeded.');
         }
@@ -197,7 +164,7 @@ class AsendiaCalculator extends AbstractCalculator
         $converter = $this->getWeightConverter();
         $country = $this->getImportCountry($package->getRecipientAddress()->getCountryCode());
 
-        $countryMaxWeight = $converter->convert($country->getMaximumWeight(), $this->getOption('mass_unit'), $package->getWeight()->getUnit());
+        $countryMaxWeight = $converter->convert($country->getMaximumWeight(), $this->get('mass_unit'), $package->getWeight()->getUnit());
         if ($math->greaterThan($package->getWeight()->getValue(), $countryMaxWeight)) {
             throw new InvalidWeightException('Sender country weight limit is exceeded.');
         }
@@ -211,7 +178,7 @@ class AsendiaCalculator extends AbstractCalculator
     {
         $country = $this->getImportCountry($package->getRecipientAddress()->getCountryCode());
 
-        $calculators = $this->getOption('zone_calculators');
+        $calculators = $this->get('zone_calculators');
         if (!array_key_exists($country->getZone(), $calculators)) {
             throw new InvalidConfigurationException('Price group does not exist.');
         }
@@ -225,7 +192,7 @@ class AsendiaCalculator extends AbstractCalculator
      */
     public function getExportCountry($code)
     {
-        $countries = $this->getOption('export_countries');
+        $countries = $this->get('export_countries');
         if (!array_key_exists($code, $countries)) {
             throw new InvalidArgumentException();
         }
@@ -239,7 +206,7 @@ class AsendiaCalculator extends AbstractCalculator
      */
     public function getImportCountry($code)
     {
-        $countries = $this->getOption('import_countries');
+        $countries = $this->get('import_countries');
         if (!array_key_exists($code, $countries)) {
             throw new InvalidArgumentException();
         }
@@ -255,17 +222,12 @@ class AsendiaCalculator extends AbstractCalculator
         return new static($processedConfig);
     }
 
-    protected function processConfig(array $config)
-    {
-
-    }
-
     /**
      * @return MathInterface
      */
     protected function getMath()
     {
-        return $this->getOption('math');
+        return $this->get('math');
     }
 
     /**
@@ -273,7 +235,7 @@ class AsendiaCalculator extends AbstractCalculator
      */
     protected function getLengthConverter()
     {
-        return $this->getOption('length_converter');
+        return $this->get('length_converter');
     }
 
     /**
@@ -281,7 +243,7 @@ class AsendiaCalculator extends AbstractCalculator
      */
     protected function getWeightConverter()
     {
-        return $this->getOption('weight_converter');
+        return $this->get('weight_converter');
     }
 
     /**
@@ -289,14 +251,72 @@ class AsendiaCalculator extends AbstractCalculator
      */
     protected function getGirthCalculator()
     {
-        return $this->getOption('girth_calculator');
+        return $this->get('girth_calculator');
     }
 
     /**
-     * @return mixed
+     * @return \Closure
      */
-    public function getExtraData()
+    protected function createImportCountriesNormalizer()
     {
-        return $this->getOption('extra_data');
+        return function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $country) {
+                if (!$country instanceof ImportCountry) {
+                    $config = $country;
+                    $country = new ImportCountry();
+                    $country->setCode($config['code']);
+                    $country->setZone($config['zone']);
+                    $country->setMaximumWeight($config['maximum_weight']);
+                }
+                $normalized[$country->getCode()] = $country;
+            }
+            return $normalized;
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    protected function createExportCountriesNormalizer()
+    {
+        return function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $country) {
+                if (!$country instanceof ExportCountry) {
+                    $config = $country;
+                    $country = new ExportCountry();
+                    $country->setCode($config['code']);
+                }
+                $normalized[$country->getCode()] = $country;
+            }
+            return $normalized;
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    protected function createZoneCalculatorsNormalizer()
+    {
+        return function (Options $options, $calculators) {
+            $normalized = [];
+            foreach ($calculators as $calculator) {
+                if (!$calculator instanceof ZoneCalculator) {
+                    $calculator = new ZoneCalculator($calculator);
+                }
+                $normalized[$calculator->getName()] = $calculator;
+            }
+            return $normalized;
+        };
+    }
+
+    /**
+     * @param mixed $name
+     * @return mixed null
+     */
+    public function get($name)
+    {
+        return $this->options && array_key_exists($name, $this->options) ? $this->options[$name] : null;
     }
 }

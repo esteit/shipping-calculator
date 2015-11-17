@@ -1,3 +1,6 @@
+EsteIt\ShippingCalculator\Model\CalculationResult:
+  empty_result:
+
 EsteIt\ShippingCalculator\Model\ImportCountry:
   import_country_usa:
     code: USA
@@ -7,6 +10,8 @@ EsteIt\ShippingCalculator\Model\ImportCountry:
 EsteIt\ShippingCalculator\Model\ExportCountry:
   export_country_usa:
     code: USA
+  export_country_rus:
+    code: RUS
 
 EsteIt\ShippingCalculator\Model\Weight:
   weight_10_kg:

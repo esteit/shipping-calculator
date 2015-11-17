@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Calculator\Dhl;
+namespace EsteIt\ShippingCalculator\CalculatorHandler\Dhl;
 
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use Moriony\Trivial\Math\MathInterface;

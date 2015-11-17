@@ -2,7 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Calculator;
 
-use EsteIt\ShippingCalculator\Calculator\Asendia\ZoneCalculator;
+use EsteIt\ShippingCalculator\CalculatorHandler\Asendia\ZoneCalculator;
 
 /**
  * @group unit

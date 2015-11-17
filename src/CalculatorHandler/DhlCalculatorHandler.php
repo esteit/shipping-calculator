@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Calculator;
+namespace EsteIt\ShippingCalculator\CalculatorHandler;
 
-use EsteIt\ShippingCalculator\Calculator\Dhl\ZoneCalculator;
+use EsteIt\ShippingCalculator\CalculatorHandler\Dhl\ZoneCalculator;
 use EsteIt\ShippingCalculator\Configuration\DhlConfiguration;
 use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
 use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
@@ -27,8 +27,13 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class DhlCalculator extends AbstractCalculator
+class DhlCalculatorHandler implements CalculatorHandlerInterface
 {
+    /**
+     * @var array
+     */
+    protected $options;
+
     public function __construct(array $options)
     {
         $math = new NativeMath();
@@ -71,59 +76,10 @@ class DhlCalculator extends AbstractCalculator
                 'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator',
             ]);
 
-        $exportCountriesNormalizer = function (Options $options, $value) {
-            $normalized = [];
-            foreach ($value as $country) {
-                if (!$country instanceof ExportCountry) {
-                    $config = $country;
-                    $country = new ExportCountry();
-                    $country->setCode($config['code']);
-                }
-                $normalized[$country->getCode()] = $country;
-            }
-            return $normalized;
-        };
-
-        $importCountriesNormalizer = function (Options $options, $value) {
-            $normalized = [];
-            foreach ($value as $country) {
-                if (!$country instanceof ImportCountry) {
-                    $config = $country;
-                    $country = new ImportCountry();
-                    $country->setCode($config['code']);
-                    $country->setZone($config['zone']);
-                }
-                $normalized[$country->getCode()] = $country;
-            }
-            return $normalized;
-        };
-
-        $zoneCalculatorsNormalizer = function (Options $options, $value) {
-            $normalized = [];
-            foreach ($value as $calculator) {
-                if (!$calculator instanceof ZoneCalculator) {
-                    $calculator = new ZoneCalculator($calculator);
-                }
-                $normalized[$calculator->getName()] = $calculator;
-            }
-            return $normalized;
-        };
-
-        $dimensionsNormalizer = function (Options $options, $value) {
-            if (!$value instanceof DimensionsInterface) {
-                $config = $value;
-                $value = new Dimensions();
-                $value->setLength(reset($config));
-                $value->setWidth(next($config));
-                $value->setHeight(next($config));
-            }
-            return $value;
-        };
-
-        $resolver->setNormalizer('export_countries', $exportCountriesNormalizer);
-        $resolver->setNormalizer('import_countries', $importCountriesNormalizer);
-        $resolver->setNormalizer('zone_calculators', $zoneCalculatorsNormalizer);
-        $resolver->setNormalizer('maximum_dimensions', $dimensionsNormalizer);
+        $resolver->setNormalizer('import_countries', $this->createImportCountriesNormalizer());
+        $resolver->setNormalizer('export_countries', $this->createExportCountriesNormalizer());
+        $resolver->setNormalizer('zone_calculators', $this->createZoneCalculatorsNormalizer());
+        $resolver->setNormalizer('maximum_dimensions', $this->createDimensionsNormalizer());
 
         $this->options = $resolver->resolve($options);
     }
@@ -141,8 +97,8 @@ class DhlCalculator extends AbstractCalculator
         $this->validateWeight($package);
 
         $weight = $package->getWeight();
-        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->getOption('mass_unit'));
-        $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions(), $this->getOption('mass_unit'));
+        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->get('mass_unit'));
+        $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions(), $this->get('mass_unit'));
 
         $math = $this->getMath();
         if ($math->greaterThan($volumetricWeight, $weight)) {
@@ -153,7 +109,7 @@ class DhlCalculator extends AbstractCalculator
         $total = $zoneCalculator->calculate($weight);
 
         $result->setTotalCost($total);
-        $result->setCurrency($this->getOption('currency'));
+        $result->setCurrency($this->get('currency'));
     }
 
     /**
@@ -179,7 +135,7 @@ class DhlCalculator extends AbstractCalculator
             throw new InvalidRecipientAddressException('Can not send a package to this country.');
         }
 
-        if (!array_key_exists($importCountry->getZone(), $this->getOption('zone_calculators'))) {
+        if (!array_key_exists($importCountry->getZone(), $this->get('zone_calculators'))) {
             throw new InvalidRecipientAddressException('Can not send a package to this country.');
         }
     }
@@ -192,20 +148,20 @@ class DhlCalculator extends AbstractCalculator
         $math = $this->getMath();
         $converter = $this->getLengthConverter();
 
-        $maxDimensions = $this->normalizeDimensions($this->getOption('maximum_dimensions'));
+        $maxDimensions = $this->normalizeDimensions($this->get('maximum_dimensions'));
         $dimensions = $this->normalizeDimensions($package->getDimensions());
 
-        $maxLength = $converter->convert($maxDimensions->getLength(), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        $maxLength = $converter->convert($maxDimensions->getLength(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $maxLength)) {
             throw new InvalidDimensionsException('Dimensions limit is exceeded.');
         }
 
-        $maxWidth = $converter->convert($maxDimensions->getWidth(), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        $maxWidth = $converter->convert($maxDimensions->getWidth(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getWidth(), $maxWidth)) {
             throw new InvalidDimensionsException('Dimensions limit is exceeded.');
         }
 
-        $maxHeight = $converter->convert($maxDimensions->getHeight(), $this->getOption('dimensions_unit'), $dimensions->getUnit());
+        $maxHeight = $converter->convert($maxDimensions->getHeight(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getHeight(), $maxHeight)) {
             throw new InvalidDimensionsException('Dimensions limit is exceeded.');
         }
@@ -216,7 +172,7 @@ class DhlCalculator extends AbstractCalculator
         $math = $this->getMath();
         $converter = $this->getWeightConverter();
 
-        $maxWeight = $converter->convert($this->getOption('maximum_weight'), $this->getOption('mass_unit'), $package->getWeight()->getUnit());
+        $maxWeight = $converter->convert($this->get('maximum_weight'), $this->get('mass_unit'), $package->getWeight()->getUnit());
         if ($math->greaterThan($package->getWeight()->getValue(), $maxWeight)) {
             throw new InvalidWeightException('Sender country weight limit is exceeded.');
         }
@@ -230,7 +186,7 @@ class DhlCalculator extends AbstractCalculator
     {
         $country = $this->getImportCountry($package->getRecipientAddress()->getCountryCode());
 
-        $calculators = $this->getOption('zone_calculators');
+        $calculators = $this->get('zone_calculators');
         if (!array_key_exists($country->getZone(), $calculators)) {
             throw new InvalidConfigurationException('Price group does not exist.');
         }
@@ -244,7 +200,7 @@ class DhlCalculator extends AbstractCalculator
      */
     public function getExportCountry($code)
     {
-        $countries = $this->getOption('export_countries');
+        $countries = $this->get('export_countries');
         if (!array_key_exists($code, $countries)) {
             throw new InvalidArgumentException();
         }
@@ -258,7 +214,7 @@ class DhlCalculator extends AbstractCalculator
      */
     public function getImportCountry($code)
     {
-        $countries = $this->getOption('import_countries');
+        $countries = $this->get('import_countries');
         if (!array_key_exists($code, $countries)) {
             throw new InvalidArgumentException();
         }
@@ -302,13 +258,22 @@ class DhlCalculator extends AbstractCalculator
         $processedConfig = $processor->processConfiguration(new DhlConfiguration(), [$config]);
         return new static($processedConfig);
     }
+    
+    /**
+     * @param mixed $name
+     * @return mixed null
+     */
+    public function get($name)
+    {
+        return $this->options && array_key_exists($name, $this->options) ? $this->options[$name] : null;
+    }
 
     /**
      * @return mixed
      */
     public function getExtraData()
     {
-        return $this->getOption('extra_data');
+        return $this->get('extra_data');
     }
 
     /**
@@ -316,7 +281,7 @@ class DhlCalculator extends AbstractCalculator
      */
     protected function getMath()
     {
-        return $this->getOption('math');
+        return $this->get('math');
     }
 
     /**
@@ -324,7 +289,7 @@ class DhlCalculator extends AbstractCalculator
      */
     protected function getLengthConverter()
     {
-        return $this->getOption('length_converter');
+        return $this->get('length_converter');
     }
 
     /**
@@ -332,7 +297,7 @@ class DhlCalculator extends AbstractCalculator
      */
     protected function getWeightConverter()
     {
-        return $this->getOption('weight_converter');
+        return $this->get('weight_converter');
     }
 
 
@@ -341,6 +306,80 @@ class DhlCalculator extends AbstractCalculator
      */
     protected function getVolumetricWeightCalculator()
     {
-        return $this->getOption('volumetric_weight_calculator');
+        return $this->get('volumetric_weight_calculator');
+    }
+
+    /**
+     * @return \Closure
+     */
+    protected function createImportCountriesNormalizer()
+    {
+        return function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $country) {
+                if (!$country instanceof ImportCountry) {
+                    $config = $country;
+                    $country = new ImportCountry();
+                    $country->setCode($config['code']);
+                    $country->setZone($config['zone']);
+                    $country->setMaximumWeight($config['maximum_weight']);
+                }
+                $normalized[$country->getCode()] = $country;
+            }
+            return $normalized;
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    protected function createExportCountriesNormalizer()
+    {
+        return function (Options $options, $value) {
+            $normalized = [];
+            foreach ($value as $country) {
+                if (!$country instanceof ExportCountry) {
+                    $config = $country;
+                    $country = new ExportCountry();
+                    $country->setCode($config['code']);
+                }
+                $normalized[$country->getCode()] = $country;
+            }
+            return $normalized;
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    protected function createZoneCalculatorsNormalizer()
+    {
+        return function (Options $options, $calculators) {
+            $normalized = [];
+            foreach ($calculators as $calculator) {
+                if (!$calculator instanceof ZoneCalculator) {
+                    $calculator = new ZoneCalculator($calculator);
+                }
+                $normalized[$calculator->getName()] = $calculator;
+            }
+            return $normalized;
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    protected function createDimensionsNormalizer()
+    {
+        return function (Options $options, $value) {
+            if (!$value instanceof DimensionsInterface) {
+                $config = $value;
+                $value = new Dimensions();
+                $value->setLength(reset($config));
+                $value->setWidth(next($config));
+                $value->setHeight(next($config));
+            }
+            return $value;
+        };
     }
 }

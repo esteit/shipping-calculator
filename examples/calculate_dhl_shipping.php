@@ -1,6 +1,7 @@
 <?php
 
-use EsteIt\ShippingCalculator\Calculator\DhlCalculator;
+use EsteIt\ShippingCalculator\Calculator\BaseCalculator;
+use EsteIt\ShippingCalculator\CalculatorHandler\DhlCalculatorHandler;
 use EsteIt\ShippingCalculator\Model\Weight;
 use EsteIt\ShippingCalculator\Model\Dimensions;
 use EsteIt\ShippingCalculator\Model\Address;
@@ -10,7 +11,9 @@ include_once __DIR__.'/../vendor/autoload.php';
 
 $config = include __DIR__.'/../src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php';
 
-$calculator = DhlCalculator::create($config);
+$calculator = new BaseCalculator([
+    'handler' => DhlCalculatorHandler::create($config)
+]);
 
 $weight = new Weight();
 $weight->setValue(10);
