@@ -86,7 +86,7 @@ class ZoneCalculator
         $math = $this->getMath();
 
         foreach ($this->options['weight_prices'] as $w => $p) {
-            if ($math->lessOrEqualThan($currentWeight, $weight) && $math->lessOrEqualThan($weight, $w)) {
+            if ($math->lessOrEqualThan($weight, $w) && $math->greaterThan($weight, $currentWeight)) {
                 $currentWeight = $w;
                 $price = $p;
             }
