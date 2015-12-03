@@ -151,6 +151,10 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
         $maxDimensions = $this->normalizeDimensions($this->get('maximum_dimensions'));
         $dimensions = $this->normalizeDimensions($package->getDimensions());
 
+        if (!$dimensions->getHeight() || !$dimensions->getLength() || !$dimensions->getWidth()) {
+            throw new InvalidDimensionsException('Dimensions must be greater than zero.');
+        }
+
         $maxLength = $converter->convert($maxDimensions->getLength(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $maxLength)) {
             throw new InvalidDimensionsException('Dimensions limit is exceeded.');
