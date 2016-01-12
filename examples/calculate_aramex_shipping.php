@@ -29,7 +29,7 @@ $senderAddress = new Address();
 $senderAddress->setCountryCode('USA');
 
 $recipientAddress = new Address();
-$recipientAddress->setCountryCode('RUS');
+$recipientAddress->setCountryCode('IND');
 
 $package = new Package();
 $package->setCalculationDate(new \DateTime());
