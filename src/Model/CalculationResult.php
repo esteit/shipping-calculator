@@ -2,16 +2,10 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
 
 class CalculationResult implements CalculationResultInterface
 {
-    /**
-     * @var AbstractCalculator
-     */
-    protected $calculator;
-
     /**
      * @var PackageInterface
      */
@@ -68,25 +62,6 @@ class CalculationResult implements CalculationResultInterface
     public function getCurrency()
     {
         return $this->currency;
-    }
-
-    /**
-     * @param AbstractCalculator $calculator
-     * @return $this
-     */
-    public function setCalculator(AbstractCalculator $calculator)
-    {
-        $this->calculator = $calculator;
-
-        return $this;
-    }
-
-    /**
-     * @return AbstractCalculator
-     */
-    public function getCalculator()
-    {
-        return $this->calculator;
     }
 
     /**

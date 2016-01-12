@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\Calculator;
+namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler;
 
 use EsteIt\ShippingCalculator\CalculatorHandler\DhlCalculatorHandler;
 use EsteIt\ShippingCalculator\CalculatorHandler\Dhl\ZoneCalculator;

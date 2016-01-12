@@ -23,6 +23,9 @@ EsteIt\ShippingCalculator\Model\Weight:
   weight_100_lb:
     value: 100
     unit: lb
+  weight_minus_1_lb:
+    value: -1
+    unit: lb
 
 EsteIt\ShippingCalculator\Model\Dimensions:
   dimensions_11_10_10_in:
@@ -76,4 +79,8 @@ EsteIt\ShippingCalculator\Model\Package:
   package_5:
     recipientAddress: @russian_address
     weight: @weight_10_lb
+    dimensions: @dimensions_10_10_11_in
+  package_6:
+    recipientAddress: @russian_address
+    weight: @weight_minus_1_lb
     dimensions: @dimensions_10_10_11_in

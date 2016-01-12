@@ -1,13 +1,13 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\GirthCalculator;
+namespace EsteIt\ShippingCalculator\Tool;
 
 use EsteIt\ShippingCalculator\Model\Dimensions;
 use EsteIt\ShippingCalculator\Model\DimensionsInterface;
-use EsteIt\ShippingCalculator\Model\Girth;
+use EsteIt\ShippingCalculator\Model\Length;
 use Moriony\Trivial\Math\MathInterface;
 
-class UspsGirthCalculator implements GirthCalculatorInterface
+class MaximumPerimeterCalculator
 {
     /**
      * @var MathInterface
@@ -50,20 +50,19 @@ class UspsGirthCalculator implements GirthCalculatorInterface
 
     /**
      * @param DimensionsInterface $dimensions
-     * @return Girth
+     * @return Length
      */
     public function calculate(DimensionsInterface $dimensions)
     {
         $dimensions = $this->normalizeDimensions($dimensions);
 
-        $value = $dimensions->getLength();
-        $value = $this->math->sum($value, $this->math->mul($dimensions->getWidth(), 2));
-        $value = $this->math->sum($value, $this->math->mul($dimensions->getHeight(), 2));
+        $value = $this->math->sum($dimensions->getLength(), $dimensions->getWidth());
+        $value = $this->math->mul($value, 2);
 
-        $girth = new Girth();
-        $girth->setUnit($dimensions->getUnit());
-        $girth->setValue($value);
+        $perimeter = new Length();
+        $perimeter->setUnit($dimensions->getUnit());
+        $perimeter->setValue($value);
 
-        return $girth;
+        return $perimeter;
     }
 }

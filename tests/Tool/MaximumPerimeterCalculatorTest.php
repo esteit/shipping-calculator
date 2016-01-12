@@ -1,15 +1,14 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\GirthCalculator;
+namespace EsteIt\ShippingCalculator\Tests\Tool;
 
-use EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator;
-use EsteIt\ShippingCalculator\Model\Weight;
+use EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator;
 use Moriony\Trivial\Math\NativeMath;
 
 /**
  * @group unit
  */
-class UspsGirthCalculatorTest extends \PHPUnit_Framework_TestCase
+class MaximumPerimeterCalculatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
 
@@ -32,7 +31,7 @@ class UspsGirthCalculatorTest extends \PHPUnit_Framework_TestCase
      */
     public function testNormalizeDimensions($dimensions)
     {
-        $calculator = new UspsGirthCalculator(new NativeMath());
+        $calculator = new MaximumPerimeterCalculator(new NativeMath());
         $normalized = $calculator->normalizeDimensions($dimensions);
 
         $this->assertGreaterThanOrEqual($normalized->getHeight(), $normalized->getLength());
@@ -44,8 +43,9 @@ class UspsGirthCalculatorTest extends \PHPUnit_Framework_TestCase
      */
     public function testCalculate($dimensions, $calculation)
     {
-        $calculator = new UspsGirthCalculator(new NativeMath());
+        $calculator = new MaximumPerimeterCalculator(new NativeMath());
         $girth = $calculator->calculate($dimensions);
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\Length', $girth);
         $this->assertEquals($calculation, $girth->getValue());
     }
 
@@ -57,15 +57,15 @@ class UspsGirthCalculatorTest extends \PHPUnit_Framework_TestCase
         return [
             [
                 $this->getFixture('dimensions_11_10_10_in'),
-                '51',
+                '42',
             ],
             [
                 $this->getFixture('dimensions_10_11_10_in'),
-                '51',
+                '42',
             ],
             [
                 $this->getFixture('dimensions_10_10_11_in'),
-                '51',
+                '42',
             ],
         ];
     }

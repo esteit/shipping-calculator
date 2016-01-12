@@ -2,7 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Model;
 
-class Girth implements GirthInterface
+class Length implements LengthInterface
 {
     protected $value;
     protected $unit;
