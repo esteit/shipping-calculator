@@ -23,6 +23,9 @@ EsteIt\ShippingCalculator\Model\Weight:
   weight_100_lb:
     value: 100
     unit: lb
+  weight_minus_1_lb:
+    value: -1
+    unit: lb
 
 EsteIt\ShippingCalculator\Model\Dimensions:
   dimensions_11_10_10_in:
@@ -57,23 +60,27 @@ EsteIt\ShippingCalculator\Model\Address:
 EsteIt\ShippingCalculator\Model\Package:
   package_1:
     calculationDate: <(new DateTime())>
-    weight: @weight_10_kg
-    senderAddress: @usa_address
-    recipientAddress: @usa_address
-    dimensions: @dimensions_10_10_10_in
+    weight: "@weight_10_kg"
+    senderAddress: "@usa_address"
+    recipientAddress: "@usa_address"
+    dimensions: "@dimensions_10_10_10_in"
   package_2:
-    recipientAddress: @russian_address
-    weight: @weight_10_lb
-    dimensions: @dimensions_11_10_10_in
+    recipientAddress: "@russian_address"
+    weight: "@weight_10_lb"
+    dimensions: "@dimensions_11_10_10_in"
   package_3:
-    recipientAddress: @usa_address
-    weight: @weight_100_lb
-    dimensions: @dimensions_11_10_10_in
+    recipientAddress: "@usa_address"
+    weight: "@weight_100_lb"
+    dimensions: "@dimensions_11_10_10_in"
   package_4:
-    recipientAddress: @russian_address
-    weight: @weight_10_lb
-    dimensions: @dimensions_10_11_10_in
+    recipientAddress: "@russian_address"
+    weight: "@weight_10_lb"
+    dimensions: "@dimensions_10_11_10_in"
   package_5:
-    recipientAddress: @russian_address
-    weight: @weight_10_lb
-    dimensions: @dimensions_10_10_11_in
+    recipientAddress: "@russian_address"
+    weight: "@weight_10_lb"
+    dimensions: "@dimensions_10_10_11_in"
+  package_6:
+    recipientAddress: "@russian_address"
+    weight: "@weight_minus_1_lb"
+    dimensions: "@dimensions_10_10_11_in"

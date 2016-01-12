@@ -10,7 +10,7 @@ use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
-use EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator;
+use EsteIt\ShippingCalculator\Tool\UspsGirthCalculator;
 use EsteIt\ShippingCalculator\Model\AddressInterface;
 use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
@@ -70,7 +70,7 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
                 'math' => 'Moriony\Trivial\Math\MathInterface',
                 'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'girth_calculator' => 'EsteIt\ShippingCalculator\GirthCalculator\UspsGirthCalculator',
+                'girth_calculator' => 'EsteIt\ShippingCalculator\Tool\UspsGirthCalculator',
             ]);
 
 

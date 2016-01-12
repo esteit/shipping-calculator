@@ -3,9 +3,9 @@
 namespace EsteIt\ShippingCalculator\Model;
 
 /**
- * Interface GirthInterface
+ * Interface LengthInterface
  */
-interface GirthInterface
+interface LengthInterface
 {
     /**
      * @return string
