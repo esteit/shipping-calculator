@@ -4,6 +4,7 @@ namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler;
 
 use EsteIt\ShippingCalculator\CalculatorHandler\DhlCalculatorHandler;
 use EsteIt\ShippingCalculator\CalculatorHandler\Dhl\ZoneCalculator;
+use EsteIt\ShippingCalculator\Model\CalculationResult;
 
 /**
  * @group unit
@@ -26,12 +27,46 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
         return $this->fixtures[$name];
     }
 
-    public function testVisit()
+    public function testCreate()
+    {
+        $calculator = DhlCalculatorHandler::create([
+            'zone_calculators' => [
+                [
+                    'name' => 1,
+                    'weight_prices' => [
+                        ['weight' =>  10, 'price' => 21.40],
+                    ],
+                ],
+            ],
+            'import_countries' => [
+                ['code' => 'USA', 'zone' => 1],
+            ],
+            'export_countries' => [
+                ['code' => 'USA'],
+            ],
+            'mass_unit' => 'lb',
+            'dimensions_unit' => 'in',
+            'maximum_dimensions' => [
+                'length' => 40,
+                'width' => 40,
+                'height' => 40
+            ],
+            'maximum_weight' => 60,
+        ]);
+
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculatorHandler\DhlCalculatorHandler', $calculator);
+    }
+
+    /**
+     * @dataProvider provideVisit
+     */
+    public function testVisit($package, $expectedCost)
     {
         $zoneCalculator = new ZoneCalculator([
             'name' => 1,
             'weight_prices' => [
-                ['weight' =>  10, 'price' => 21.40]
+                ['weight' =>  10, 'price' => 21.40],
+                ['weight' =>  1000, 'price' => 42.80],
             ],
         ]);
 
@@ -41,22 +76,20 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'export_countries' => [$this->getFixture('export_country_usa')],
             'mass_unit' => 'lb',
             'dimensions_unit' => 'in',
-            'maximum_dimensions' => [41.338, 10, 10],
+            'maximum_dimensions' => [40, 40, 40],
             'maximum_weight' => 60,
         ]);
-        $package = $this->getFixture('package_1');
-        $result = $this->getFixture('empty_result');
-
+        $result = new CalculationResult();
         $calculator->visit($result, $package);
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
         $this->assertNull($result->getError());
-        $this->assertSame(21.4, $result->getTotalCost());
+        $this->assertSame($expectedCost, $result->getTotalCost());
         $this->assertSame('USD', $result->getCurrency());
     }
 
     /**
-     * @dataProvider provideInvalidAddressesException
+     * @dataProvider provideInvalidSenderAddresses
      */
     public function testValidateSenderAddressException($calculatorOptions, $address)
     {
@@ -67,7 +100,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider provideInvalidAddressesException
+     * @dataProvider provideInvalidRecipientAddresses
      */
     public function testValidateRecipientSenderAddressException($calculatorOptions, $address)
     {
@@ -80,11 +113,19 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideValidateDimensionsException
      */
-    public function testValidateDimensionsException($exceptionClass, $exceptionMessage, $calculatorOptions, $package)
+    public function testValidateDimensionsException($exceptionMessage, $package)
     {
-        $this->setExpectedException($exceptionClass, $exceptionMessage);
+        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidDimensionsException', $exceptionMessage);
 
-        $calculator = new DhlCalculatorHandler($calculatorOptions);
+        $calculator = new DhlCalculatorHandler([
+            'zone_calculators' => [],
+            'import_countries' => [$this->getFixture('import_country_usa')],
+            'export_countries' => [$this->getFixture('export_country_usa')],
+            'mass_unit' => 'lb',
+            'dimensions_unit' => 'in',
+            'maximum_dimensions' => [20, 10, 10],
+            'maximum_weight' => 60,
+        ]);
         $calculator->validateDimensions($package);
     }
 
@@ -108,7 +149,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    public function provideInvalidAddressesException()
+    public function provideInvalidSenderAddresses()
     {
         $calculatorOptions = [
             'zone_calculators' => [],
@@ -135,7 +176,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    public function provideValidateDimensionsException()
+    public function provideInvalidRecipientAddresses()
     {
         $calculatorOptions = [
             'zone_calculators' => [],
@@ -143,28 +184,61 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'export_countries' => [$this->getFixture('export_country_usa')],
             'mass_unit' => 'lb',
             'dimensions_unit' => 'in',
-            'maximum_dimensions' => [10, 10, 10],
+            'maximum_dimensions' => [41.338, 10, 10],
             'maximum_weight' => 60,
         ];
 
         return [
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidDimensionsException',
-                'Dimensions limit is exceeded.',
                 $calculatorOptions,
+                $this->getFixture('french_address'),
+            ],
+            [
+                $calculatorOptions,
+                $this->getFixture('usa_address'),
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function provideValidateDimensionsException()
+    {
+        return [
+            [
+                'Dimensions must be greater than zero.',
+                $this->getFixture('package_7'),
+            ],
+            [
+                'Dimensions limit is exceeded.',
                 $this->getFixture('package_2'),
             ],
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidDimensionsException',
                 'Dimensions limit is exceeded.',
-                $calculatorOptions,
                 $this->getFixture('package_4'),
             ],
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidDimensionsException',
                 'Dimensions limit is exceeded.',
-                $calculatorOptions,
+                $this->getFixture('package_8'),
+            ],
+            [
+                'Dimensions limit is exceeded.',
                 $this->getFixture('package_5'),
+            ],
+        ];
+    }
+
+    public function provideVisit()
+    {
+        return [
+            [
+                $this->getFixture('package_1'),
+                21.4,
+            ],
+            [
+                $this->getFixture('package_5'),
+                42.8,
             ],
         ];
     }

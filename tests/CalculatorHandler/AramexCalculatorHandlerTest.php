@@ -53,33 +53,40 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculatorHandler\AramexCalculatorHandler', $calculator);
     }
 
-    public function testVisit()
+    /**
+     * @dataProvider provideVisit
+     */
+    public function testVisit($package, $expectedCost)
     {
         $calculator = new AramexCalculatorHandler([
             'zones' => [
                 [
                     'name' => 1,
                     'weight_prices' => [
-                        ['weight' =>  10, 'price' => 21.40]
+                        ['weight' =>  10, 'price' => 21.40],
+                        ['weight' =>  1000, 'price' => 42.80],
                     ],
                 ]
             ],
-            'import_countries' => [$this->getFixture('import_country_usa')],
-            'export_countries' => [$this->getFixture('export_country_usa')],
+            'import_countries' => [
+                $this->getFixture('import_country_usa')
+            ],
+            'export_countries' => [
+                $this->getFixture('export_country_usa')
+            ],
             'mass_unit' => 'lb',
             'dimensions_unit' => 'in',
             'maximum_dimension' => 41.338,
             'maximum_perimeter' => 300,
             'maximum_weight' => 60,
         ]);
-        $package = $this->getFixture('package_1');
-        $result = new CalculationResult();
 
+        $result = new CalculationResult();
         $calculator->visit($result, $package);
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
         $this->assertNull($result->getError());
-        $this->assertSame(21.4, $result->getTotalCost());
+        $this->assertSame($expectedCost, $result->getTotalCost());
         $this->assertSame('USD', $result->getCurrency());
     }
 
@@ -324,6 +331,20 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
                 'EsteIt\ShippingCalculator\Exception\InvalidWeightException',
                 $calculatorOptions,
                 $this->getFixture('package_3')
+            ],
+        ];
+    }
+
+    public function provideVisit()
+    {
+        return [
+            [
+                $this->getFixture('package_1'),
+                21.4,
+            ],
+            [
+                $this->getFixture('package_5'),
+                42.8,
             ],
         ];
     }

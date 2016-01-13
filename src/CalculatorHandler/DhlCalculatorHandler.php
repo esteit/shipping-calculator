@@ -17,6 +17,7 @@ use EsteIt\ShippingCalculator\Model\DimensionsInterface;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
 use EsteIt\ShippingCalculator\Model\ImportCountry;
 use EsteIt\ShippingCalculator\Model\PackageInterface;
+use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
@@ -50,6 +51,7 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
                 'weight_converter' => $weightConverter,
                 'length_converter' => $lengthConverter,
                 'volumetric_weight_calculator' => new DhlVolumetricWeightCalculator($math, $weightConverter, $lengthConverter),
+                'dimensions_normalizer' => new DimensionsNormalizer($math),
                 'extra_data' => null,
             ])
             ->setRequired([
@@ -74,6 +76,7 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
                 'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator',
+                'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
             ]);
 
         $resolver->setNormalizer('import_countries', $this->createImportCountriesNormalizer());
@@ -97,8 +100,10 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
         $this->validateWeight($package);
 
         $weight = $package->getWeight();
+        $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions());
+
         $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->get('mass_unit'));
-        $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions(), $this->get('mass_unit'));
+        $volumetricWeight = $this->getWeightConverter()->convert($volumetricWeight->getValue(), $volumetricWeight->getUnit(), $this->get('mass_unit'));
 
         $math = $this->getMath();
         if ($math->greaterThan($volumetricWeight, $weight)) {
@@ -147,13 +152,18 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
     {
         $math = $this->getMath();
         $converter = $this->getLengthConverter();
+        $dimensions = $package->getDimensions();
 
-        $maxDimensions = $this->normalizeDimensions($this->get('maximum_dimensions'));
-        $dimensions = $this->normalizeDimensions($package->getDimensions());
+        $invalidDimensions = $math->lessOrEqualThan($dimensions->getHeight(), 0)
+            || $math->lessOrEqualThan($dimensions->getLength(), 0)
+            || $math->lessOrEqualThan($dimensions->getWidth(), 0);
 
-        if (!$dimensions->getHeight() || !$dimensions->getLength() || !$dimensions->getWidth()) {
+        if ($invalidDimensions) {
             throw new InvalidDimensionsException('Dimensions must be greater than zero.');
         }
+
+        $maxDimensions = $this->getDimensionsNormalizer()->normalize($this->get('maximum_dimensions'));
+        $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
 
         $maxLength = $converter->convert($maxDimensions->getLength(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $maxLength)) {
@@ -226,36 +236,6 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
         return $countries[$code];
     }
 
-    /**
-     * @param DimensionsInterface $dimensions
-     * @return Dimensions
-     */
-    public function normalizeDimensions(DimensionsInterface $dimensions)
-    {
-        $math = $this->getMath();
-        $values = [$dimensions->getLength()];
-
-        if ($math->greaterThan($dimensions->getWidth(), reset($values))) {
-            array_unshift($values, $dimensions->getWidth());
-        } else {
-            $values[] = $dimensions->getWidth();
-        }
-
-        if ($math->greaterThan($dimensions->getHeight(), reset($values))) {
-            array_unshift($values, $dimensions->getHeight());
-        } else {
-            $values[] = $dimensions->getHeight();
-        }
-
-        $normalized = new Dimensions();
-        $normalized->setUnit($dimensions->getUnit());
-        $normalized->setLength(reset($values));
-        $normalized->setWidth(next($values));
-        $normalized->setHeight(next($values));
-
-        return $normalized;
-    }
-
     public static function create(array $config)
     {
         $processor = new Processor();
@@ -270,14 +250,6 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
     public function get($name)
     {
         return $this->options && array_key_exists($name, $this->options) ? $this->options[$name] : null;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getExtraData()
-    {
-        return $this->get('extra_data');
     }
 
     /**
@@ -304,13 +276,20 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
         return $this->get('weight_converter');
     }
 
-
     /**
      * @return DhlVolumetricWeightCalculator
      */
     protected function getVolumetricWeightCalculator()
     {
         return $this->get('volumetric_weight_calculator');
+    }
+
+    /**
+     * @return DimensionsNormalizer
+     */
+    protected function getDimensionsNormalizer()
+    {
+        return $this->get('dimensions_normalizer');
     }
 
     /**

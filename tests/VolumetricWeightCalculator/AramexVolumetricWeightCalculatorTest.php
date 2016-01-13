@@ -31,12 +31,14 @@ class AramexVolumetricWeightCalculatorTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideCalculate
      */
-    public function testCalculate($dimensions, $expectedVolumeWeight, $weightUnit)
+    public function testCalculate($dimensions, $expectedVolumeWeight)
     {
         $math = new NativeMath();
         $calculator = new AramexVolumetricWeightCalculator($math, new WeightConverter($math), new LengthConverter($math));
-        $volumetricWeight = $calculator->calculate($dimensions, $weightUnit);
-        $this->assertEquals($expectedVolumeWeight, $volumetricWeight);
+        $volumetricWeight = $calculator->calculate($dimensions);
+
+        $this->assertEquals($expectedVolumeWeight, $volumetricWeight->getValue());
+        $this->assertEquals('lb', $volumetricWeight->getUnit());
     }
 
     /**
@@ -47,48 +49,31 @@ class AramexVolumetricWeightCalculatorTest extends \PHPUnit_Framework_TestCase
         return [
             [
                 $this->getFixture('dimensions_1_1_1_m'),
-                '166.747',
-                'kg',
-            ],
-            [
-                $this->getFixture('dimensions_100_100_100_cm'),
-                '166.747',
-                'kg',
-            ],
-            [
-                $this->getFixture('dimensions_box_39.37in'),
-                '166.746',
-                'kg',
+                '367.613',
             ],
             [
                 $this->getFixture('dimensions_1_1_1_m'),
                 '367.613',
-                'lb',
             ],
             [
                 $this->getFixture('dimensions_100_100_100_cm'),
                 '367.613',
-                'lb',
             ],
             [
                 $this->getFixture('dimensions_box_39.37in'),
                 '367.611',
-                'lb',
             ],
             [
                 $this->getFixture('dimensions_box_100in'),
                 '6024.097',
-                'lb',
             ],
             [
                 $this->getFixture('dimensions_box_10in'),
                 '6.025',
-                'lb',
             ],
             [
                 $this->getFixture('dimensions_100_10_10_in'),
                 '60.241',
-                'lb',
             ],
         ];
     }
