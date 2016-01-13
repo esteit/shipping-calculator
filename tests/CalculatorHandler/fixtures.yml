@@ -1,6 +1,3 @@
-EsteIt\ShippingCalculator\Model\CalculationResult:
-  empty_result:
-
 EsteIt\ShippingCalculator\Model\ImportCountry:
   import_country_usa:
     code: USA
@@ -28,18 +25,18 @@ EsteIt\ShippingCalculator\Model\Weight:
     unit: lb
 
 EsteIt\ShippingCalculator\Model\Dimensions:
-  dimensions_11_10_10_in:
-    length: 11
+  dimensions_21_10_10_in:
+    length: 21
     width: 10
     height: 10
     unit: in
-  dimensions_10_11_10_in:
-    length: 10
+  dimensions_20_11_10_in:
+    length: 20
     width: 11
     height: 10
     unit: in
-  dimensions_10_10_11_in:
-    length: 10
+  dimensions_20_10_11_in:
+    length: 20
     width: 10
     height: 11
     unit: in
@@ -47,6 +44,16 @@ EsteIt\ShippingCalculator\Model\Dimensions:
     length: 10
     width: 10
     height: 10
+    unit: in
+  dimensions_30_30_30_in:
+    length: 30
+    width: 30
+    height: 30
+    unit: in
+  dimensions_0_0_0_in:
+    length: 0
+    width: 0
+    height: 0
     unit: in
 
 EsteIt\ShippingCalculator\Model\Address:
@@ -67,20 +74,29 @@ EsteIt\ShippingCalculator\Model\Package:
   package_2:
     recipientAddress: "@russian_address"
     weight: "@weight_10_lb"
-    dimensions: "@dimensions_11_10_10_in"
+    dimensions: "@dimensions_21_10_10_in"
   package_3:
     recipientAddress: "@usa_address"
     weight: "@weight_100_lb"
-    dimensions: "@dimensions_11_10_10_in"
+    dimensions: "@dimensions_21_10_10_in"
   package_4:
     recipientAddress: "@russian_address"
     weight: "@weight_10_lb"
-    dimensions: "@dimensions_10_11_10_in"
+    dimensions: "@dimensions_20_11_10_in"
   package_5:
-    recipientAddress: "@russian_address"
+    senderAddress: "@usa_address"
+    recipientAddress: "@usa_address"
     weight: "@weight_10_lb"
-    dimensions: "@dimensions_10_10_11_in"
+    dimensions: "@dimensions_30_30_30_in"
   package_6:
     recipientAddress: "@russian_address"
     weight: "@weight_minus_1_lb"
-    dimensions: "@dimensions_10_10_11_in"
+    dimensions: "@dimensions_20_10_11_in"
+  package_7:
+    recipientAddress: "@russian_address"
+    weight: "@weight_minus_1_lb"
+    dimensions: "@dimensions_0_0_0_in"
+  package_8:
+    recipientAddress: "@russian_address"
+    weight: "@weight_10_lb"
+    dimensions: "@dimensions_20_10_11_in"

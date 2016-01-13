@@ -10,6 +10,7 @@ use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
+use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\Tool\UspsGirthCalculator;
 use EsteIt\ShippingCalculator\Model\AddressInterface;
 use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
@@ -36,6 +37,7 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     {
         $math = new NativeMath();
         $resolver = new OptionsResolver();
+        $dimensionsNormalizer = new DimensionsNormalizer($math);
         $resolver
             ->setDefined([
                 'extra_data'
@@ -45,7 +47,8 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
                 'math' => $math,
                 'weight_converter' => new WeightConverter($math),
                 'length_converter' => new LengthConverter($math),
-                'girth_calculator' => new UspsGirthCalculator($math),
+                'girth_calculator' => new UspsGirthCalculator($math, $dimensionsNormalizer),
+                'dimensions_normalizer' => $dimensionsNormalizer,
                 'extra_data' => null,
             ])
             ->setRequired([
@@ -71,6 +74,7 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
                 'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'girth_calculator' => 'EsteIt\ShippingCalculator\Tool\UspsGirthCalculator',
+                'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
             ]);
 
 
@@ -145,7 +149,7 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
         $converter = $this->getLengthConverter();
         $girthCalculator = $this->getGirthCalculator();
 
-        $dimensions = $girthCalculator->normalizeDimensions($package->getDimensions());
+        $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
         $maximumDimension = $converter->convert($this->get('maximum_dimension'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $maximumDimension)) {
             throw new InvalidDimensionsException('Side length limit is exceeded.');
@@ -252,6 +256,14 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     protected function getGirthCalculator()
     {
         return $this->get('girth_calculator');
+    }
+
+    /**
+     * @return DimensionsNormalizer
+     */
+    protected function getDimensionsNormalizer()
+    {
+        return $this->get('dimensions_normalizer');
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace EsteIt\ShippingCalculator\VolumetricWeightCalculator;
 
 use EsteIt\ShippingCalculator\Model\DimensionsInterface;
+use EsteIt\ShippingCalculator\Model\Weight;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\WeightConverter;
 use Moriony\Trivial\Math\MathInterface;
@@ -41,23 +42,24 @@ class AramexVolumetricWeightCalculator implements VolumetricWeightCalculatorInte
 
     /**
      * @param DimensionsInterface $dimensions
-     * @param string $toWeightUnit
-     * @return mixed
+     * @return Weight
      */
-    public function calculate(DimensionsInterface $dimensions, $toWeightUnit)
+    public function calculate(DimensionsInterface $dimensions)
     {
         $length = $this->lengthConverter->convert($dimensions->getLength(), $dimensions->getUnit(), LengthUnits::IN);
         $width = $this->lengthConverter->convert($dimensions->getWidth(), $dimensions->getUnit(), LengthUnits::IN);
         $height = $this->lengthConverter->convert($dimensions->getHeight(), $dimensions->getUnit(), LengthUnits::IN);
 
-        $volume = $length;
-        $volume = $this->math->mul($volume, $width);
+        $volume = $this->math->mul($length, $width);
         $volume = $this->math->mul($volume, $height);
 
         $value = $this->math->div($volume, $this->getFactor());
-        $value = $this->weightConverter->convert($value, WeightUnits::LB, $toWeightUnit);
         $value = $this->math->roundUp($value, 3);
 
-        return $value;
+        $weight = new Weight();
+        $weight->setValue($value);
+        $weight->setUnit(WeightUnits::LB);
+
+        return $weight;
     }
 }

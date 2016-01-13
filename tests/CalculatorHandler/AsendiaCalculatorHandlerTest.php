@@ -4,6 +4,7 @@ namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler;
 
 use EsteIt\ShippingCalculator\CalculatorHandler\AsendiaCalculatorHandler;
 use EsteIt\ShippingCalculator\CalculatorHandler\Asendia\ZoneCalculator;
+use EsteIt\ShippingCalculator\Model\CalculationResult;
 
 /**
  * @group unit
@@ -26,6 +27,37 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
         return $this->fixtures[$name];
     }
 
+    public function testCreate()
+    {
+        $calculator = AsendiaCalculatorHandler::create([
+            'zone_calculators' => [
+                [
+                    'name' => 1,
+                    'weight_prices' => [
+                        ['weight' =>  10, 'price' => 21.40]
+                    ],
+                ]
+            ],
+            'import_countries' => [
+                [
+                    'code' => 'USA',
+                    'zone' => 1,
+                    'maximum_weight' => 40,
+                ]
+            ],
+            'export_countries' => [
+                [  'code' => 'USA' ],
+            ],
+            'fuel_subcharge' => 0.07,
+            'mass_unit' => 'lb',
+            'dimensions_unit' => 'in',
+            'maximum_dimension' => 41.338,
+            'maximum_girth' => 77.755,
+        ]);
+
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculatorHandler\AsendiaCalculatorHandler', $calculator);
+    }
+
     public function testVisit()
     {
         $zoneCalculator = new ZoneCalculator([
@@ -46,7 +78,7 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_girth' => 77.755,
         ]);
         $package = $this->getFixture('package_1');
-        $result = $this->getFixture('empty_result');
+        $result = new CalculationResult();
 
         $calculator->visit($result, $package);
 

@@ -2,6 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Tool;
 
+use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator;
 use Moriony\Trivial\Math\NativeMath;
 
@@ -29,21 +30,10 @@ class MaximumPerimeterCalculatorTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideDimensions
      */
-    public function testNormalizeDimensions($dimensions)
-    {
-        $calculator = new MaximumPerimeterCalculator(new NativeMath());
-        $normalized = $calculator->normalizeDimensions($dimensions);
-
-        $this->assertGreaterThanOrEqual($normalized->getHeight(), $normalized->getLength());
-        $this->assertGreaterThanOrEqual($normalized->getWidth(), $normalized->getLength());
-    }
-
-    /**
-     * @dataProvider provideDimensions
-     */
     public function testCalculate($dimensions, $calculation)
     {
-        $calculator = new MaximumPerimeterCalculator(new NativeMath());
+        $math = new NativeMath();
+        $calculator = new MaximumPerimeterCalculator($math, new DimensionsNormalizer($math));
         $girth = $calculator->calculate($dimensions);
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\Length', $girth);
         $this->assertEquals($calculation, $girth->getValue());

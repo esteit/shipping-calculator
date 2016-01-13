@@ -8,6 +8,7 @@ use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use EsteIt\ShippingCalculator\Model\AddressInterface;
+use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator;
 use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
@@ -36,6 +37,7 @@ class AramexCalculatorHandler implements CalculatorHandlerInterface
         $resolver = new OptionsResolver();
         $weightConverter = new WeightConverter($math);
         $lengthConverter = new LengthConverter($math);
+        $dimensionsNormalizer = new DimensionsNormalizer($math);
 
         $resolver
             ->setDefined([
@@ -46,8 +48,9 @@ class AramexCalculatorHandler implements CalculatorHandlerInterface
                 'math' => $math,
                 'weight_converter' => $weightConverter,
                 'length_converter' => $lengthConverter,
-                'perimeter_calculator' => new MaximumPerimeterCalculator($math),
+                'perimeter_calculator' => new MaximumPerimeterCalculator($math, $dimensionsNormalizer),
                 'volumetric_weight_calculator' => new AramexVolumetricWeightCalculator($math, $weightConverter, $lengthConverter),
+                'dimensions_normalizer' => $dimensionsNormalizer,
                 'extra_data' => null,
             ])
             ->setRequired([
@@ -74,6 +77,7 @@ class AramexCalculatorHandler implements CalculatorHandlerInterface
                 'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'perimeter_calculator' => 'EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator',
                 'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\AramexVolumetricWeightCalculator',
+                'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
             ]);
 
 
@@ -124,7 +128,7 @@ class AramexCalculatorHandler implements CalculatorHandlerInterface
 
     public function validateMaximumDimension(PackageInterface $package)
     {
-        $dimensions = $this->getPerimeterCalculator()->normalizeDimensions($package->getDimensions());
+        $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
         $maximumDimension = $this->getLengthConverter()->convert($this->get('maximum_dimension'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($this->getMath()->greaterThan($dimensions->getLength(), $maximumDimension)) {
             throw new InvalidDimensionsException('Side length limit is exceeded.');
@@ -160,12 +164,19 @@ class AramexCalculatorHandler implements CalculatorHandlerInterface
     public function getPrice(PackageInterface $package)
     {
         $weight = $package->getWeight();
+        $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions());
+
         $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->get('mass_unit'));
+        $volumetricWeight = $this->getWeightConverter()->convert($volumetricWeight->getValue(), $volumetricWeight->getUnit(), $this->get('mass_unit'));
+
+        $math = $this->getMath();
+        if ($math->greaterThan($volumetricWeight, $weight)) {
+            $weight = $volumetricWeight;
+        }
 
         $importCountry = $this->detectImportCountry($package->getRecipientAddress());
         $zone = $this->get('zones')[$importCountry->getZone()];
 
-        $math = $this->getMath();
         $currentWeight = null;
         $price = null;
 
@@ -235,6 +246,22 @@ class AramexCalculatorHandler implements CalculatorHandlerInterface
     protected function getPerimeterCalculator()
     {
         return $this->get('perimeter_calculator');
+    }
+
+    /**
+     * @return AramexVolumetricWeightCalculator
+     */
+    protected function getVolumetricWeightCalculator()
+    {
+        return $this->get('volumetric_weight_calculator');
+    }
+
+    /**
+     * @return DimensionsNormalizer
+     */
+    protected function getDimensionsNormalizer()
+    {
+        return $this->get('dimensions_normalizer');
     }
 
     /**

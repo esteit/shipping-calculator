@@ -9,8 +9,7 @@ interface VolumetricWeightCalculatorInterface
 {
     /**
      * @param DimensionsInterface $dimensions
-     * @param string $toWeightUnit
      * @return WeightInterface
      */
-    public function calculate(DimensionsInterface $dimensions, $toWeightUnit);
+    public function calculate(DimensionsInterface $dimensions);
 }

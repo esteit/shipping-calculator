@@ -2,6 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Tool;
 
+use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\Tool\UspsGirthCalculator;
 use Moriony\Trivial\Math\NativeMath;
 
@@ -29,21 +30,10 @@ class UspsGirthCalculatorTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideDimensions
      */
-    public function testNormalizeDimensions($dimensions)
-    {
-        $calculator = new UspsGirthCalculator(new NativeMath());
-        $normalized = $calculator->normalizeDimensions($dimensions);
-
-        $this->assertGreaterThanOrEqual($normalized->getHeight(), $normalized->getLength());
-        $this->assertGreaterThanOrEqual($normalized->getWidth(), $normalized->getLength());
-    }
-
-    /**
-     * @dataProvider provideDimensions
-     */
     public function testCalculate($dimensions, $calculation)
     {
-        $calculator = new UspsGirthCalculator(new NativeMath());
+        $math = new NativeMath();
+        $calculator = new UspsGirthCalculator($math, new DimensionsNormalizer($math));
         $girth = $calculator->calculate($dimensions);
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\Length', $girth);
         $this->assertEquals($calculation, $girth->getValue());
