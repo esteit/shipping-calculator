@@ -102,7 +102,7 @@ class AramexCalculatorHandler implements CalculatorHandlerInterface
         $this->validateWeight($package);
         $price = $this->getPrice($package);
 
-        $result->setTotalCost($price);
+        $result->setShippingCost($price);
         $result->setCurrency($this->get('currency'));
     }
 

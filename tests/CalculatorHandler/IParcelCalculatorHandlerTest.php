@@ -86,7 +86,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
         $this->assertNull($result->getError());
-        $this->assertSame($expectedCost, $result->getTotalCost());
+        $this->assertSame($expectedCost, $result->getShippingCost());
         $this->assertSame('USD', $result->getCurrency());
     }
 

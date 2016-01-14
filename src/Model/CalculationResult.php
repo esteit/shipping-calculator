@@ -14,7 +14,7 @@ class CalculationResult implements CalculationResultInterface
     /**
      * @var string|int|float
      */
-    protected $totalCost;
+    protected $shippingCost;
 
     /**
      * @var BasicExceptionInterface
@@ -27,12 +27,12 @@ class CalculationResult implements CalculationResultInterface
     protected $currency;
 
     /**
-     * @param string|int|float $totalCost
+     * @param string|int|float $cost
      * @return $this
      */
-    public function setTotalCost($totalCost)
+    public function setShippingCost($cost)
     {
-        $this->totalCost = $totalCost;
+        $this->shippingCost = $cost;
 
         return $this;
     }
@@ -40,9 +40,9 @@ class CalculationResult implements CalculationResultInterface
     /**
      * @return string|int|float
      */
-    public function getTotalCost()
+    public function getShippingCost()
     {
-        return $this->totalCost;
+        return $this->shippingCost;
     }
 
     /**

@@ -108,7 +108,7 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
         $fuelCost = $math->mul($wholeWeight, $this->get('fuel_subcharge'));
         $total = $math->sum($cost, $fuelCost);
 
-        $result->setTotalCost($total);
+        $result->setShippingCost($total);
         $result->setCurrency($this->get('currency'));
     }
 

@@ -18,15 +18,15 @@ interface CalculationResultInterface
     public function getCurrency();
 
     /**
-     * @param string|int|float $totalCost
+     * @param string|int|float $cost
      * @return $this
      */
-    public function setTotalCost($totalCost);
+    public function setShippingCost($cost);
 
     /**
      * @return string|int|float
      */
-    public function getTotalCost();
+    public function getShippingCost();
 
     /**
      * @param PackageInterface $package

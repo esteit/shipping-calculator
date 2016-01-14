@@ -113,7 +113,7 @@ class DhlCalculatorHandler implements CalculatorHandlerInterface
         $zoneCalculator = $this->getZoneCalculator($package);
         $total = $zoneCalculator->calculate($weight);
 
-        $result->setTotalCost($total);
+        $result->setShippingCost($total);
         $result->setCurrency($this->get('currency'));
     }
 
