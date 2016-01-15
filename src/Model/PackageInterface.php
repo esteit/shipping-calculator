@@ -13,11 +13,6 @@ interface PackageInterface
     public function getWeight();
 
     /**
-     * @return \DateTime
-     */
-    public function getCalculationDate();
-
-    /**
      * @return AddressInterface
      */
     public function getSenderAddress();

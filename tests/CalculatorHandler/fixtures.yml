@@ -66,7 +66,6 @@ EsteIt\ShippingCalculator\Model\Address:
 
 EsteIt\ShippingCalculator\Model\Package:
   package_1:
-    calculationDate: <(new DateTime())>
     weight: "@weight_10_kg"
     senderAddress: "@usa_address"
     recipientAddress: "@usa_address"

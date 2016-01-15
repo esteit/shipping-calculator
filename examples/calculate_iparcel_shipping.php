@@ -32,7 +32,6 @@ $recipientAddress = new Address();
 $recipientAddress->setCountryCode('SGP');
 
 $package = new Package();
-$package->setCalculationDate(new \DateTime());
 $package->setWeight($weight);
 $package->setDimensions($dimensions);
 $package->setSenderAddress($senderAddress);
@@ -40,5 +39,5 @@ $package->setRecipientAddress($recipientAddress);
 
 $result = $calculator->calculate($package);
 
-var_dump($result->getTotalCost());
+var_dump($result->getShippingCost());
 

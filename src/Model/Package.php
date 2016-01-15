@@ -5,7 +5,6 @@ namespace EsteIt\ShippingCalculator\Model;
 class Package implements PackageInterface
 {
     protected $weight;
-    protected $calculationDate;
     protected $senderAddress;
     protected $recipientAddress;
     protected $dimensions;
@@ -46,25 +45,6 @@ class Package implements PackageInterface
     public function getDimensions()
     {
         return $this->dimensions;
-    }
-
-    /**
-     * @param \DateTime $calculationDate
-     * @return $this
-     */
-    public function setCalculationDate($calculationDate)
-    {
-        $this->calculationDate = $calculationDate;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getCalculationDate()
-    {
-        return $this->calculationDate;
     }
 
     /**
