@@ -73,7 +73,7 @@ $result = $calculator->calculate($package);
 
 What is what:
 - [Weight](/src/Model/Weight.php) contains information about physical weight;
-- [Dimensions](/src/Model/Dimensions.php) contains information about package box dimensions. It required to caluclate a volumutric weight of your package;
+- [Dimensions](/src/Model/Dimensions.php) contains information about package box dimensions. It required to caluclate a volumetric weight of your package;
 - [$senderAddress](/src/Model/Address.php) and [$recipientAddress](/src/Model/Address.php) contains information about sender and recipient;
 - [Package](/src/Model/Package.php) is a wrapper object to all objects above. You will need to pass this object to `calculate` method of your calculator;
 - [$result](/src/Model/CalculationResult.php) contains your package and resulting calculation data;
