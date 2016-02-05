@@ -35,9 +35,9 @@ $calculator = new BaseCalculator([
 ```
 
 What is what:
-- [DhlCalculatorHandler](/src/Calculator/BaseCalculator.php) contains calculation algorithm for the Dhl Express Shipping Method
-- [$config](/src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php) contains configuration for the `DhlCalculatorHandler`
-- [BaseCalculator](/src/Calculator/BaseCalculator.php) is a wrapper for a calculation handlers, it contains an algorithm "How to use calculation handlers" and returns a calculation result
+- [DhlCalculatorHandler](/src/Calculator/BaseCalculator.php) contains calculation algorithm for the Dhl Express Shipping Method;
+- [$config](/src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php) contains configuration for the `DhlCalculatorHandler`;
+- [BaseCalculator](/src/Calculator/BaseCalculator.php) is a wrapper for a calculation handlers, it contains an algorithm "How to use calculation handlers" and returns a calculation result;
 
 ### How to calculate a package shipping?
 
@@ -72,8 +72,8 @@ $result = $calculator->calculate($package);
 ```
 
 What is what:
-- [Weight](/src/Model/Weight.php) contains information about physical weight.
-- [Dimensions](/src/Model/Dimensions.php) contains information about package box dimensions. It required to caluclate a volumutric weight of your package.
-- [$senderAddress](/src/Model/Address.php) and [$recipientAddress](/src/Model/Address.php) contains information about sender and recipient
-- [Package](/src/Model/Package.php) is a wrapper object to all objects above. You will need to pass this object to `calculate` method of your calculator
-- [$result](/src/Model/CalculationResult.php) contains your package and resulting calculation data
+- [Weight](/src/Model/Weight.php) contains information about physical weight;
+- [Dimensions](/src/Model/Dimensions.php) contains information about package box dimensions. It required to caluclate a volumutric weight of your package;
+- [$senderAddress](/src/Model/Address.php) and [$recipientAddress](/src/Model/Address.php) contains information about sender and recipient;
+- [Package](/src/Model/Package.php) is a wrapper object to all objects above. You will need to pass this object to `calculate` method of your calculator;
+- [$result](/src/Model/CalculationResult.php) contains your package and resulting calculation data;
