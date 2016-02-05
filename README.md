@@ -35,7 +35,7 @@ $calculator = new BaseCalculator([
 ```
 
 What is what:
-- `DhlCalculatorHandler` is containing calculation algorithm for the Dhl Express Shipping Method
-- `$config` containing configuration for the `DhlCalculatorHandler`
-- `BaseCalculator` is a wrapper for a calculation handlers, it's contain an algorithm "How to use calculation handlers" and returning a calculation result
+- [DhlCalculatorHandler](/src/Calculator/BaseCalculator.php) contains calculation algorithm for the Dhl Express Shipping Method
+- [$config](/src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php) contains configuration for the `DhlCalculatorHandler`
+- [BaseCalculator](/src/Calculator/BaseCalculator.php) is a wrapper for a calculation handlers, it contains an algorithm "How to use calculation handlers" and returns a calculation result
 
