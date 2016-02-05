@@ -6,3 +6,17 @@
 [![Latest Stable Version](https://poser.pugx.org/shiptor/shipping-calculator/v/stable)](https://packagist.org/packages/shiptor/shipping-calculator)
 [![Total Downloads](https://poser.pugx.org/shiptor/shipping-calculator/downloads)](https://packagist.org/packages/shiptor/shipping-calculator)
 [![License](https://poser.pugx.org/shiptor/shipping-calculator/license)](https://packagist.org/packages/shiptor/shipping-calculator)
+
+Shipping calculation library based on Symfony 2 components.
+
+## Installation
+
+Add in your ```composer.json``` the require entry for this library.
+```json
+{
+    "require": {
+        "shiptor/shipping-calculator": "*"
+    }
+}
+```
+and run ```composer install``` (or ```update```) to download all files.
