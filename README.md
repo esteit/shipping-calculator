@@ -77,3 +77,20 @@ What is what:
 - [$senderAddress](/src/Model/Address.php) and [$recipientAddress](/src/Model/Address.php) contains information about sender and recipient;
 - [Package](/src/Model/Package.php) is a wrapper object to all objects above. You will need to pass this object to `calculate` method of your calculator;
 - [$result](/src/Model/CalculationResult.php) contains your package and resulting calculation data;
+
+
+### How to extend a calculator?
+
+Shipping calculator using [symfony event dispatcher](https://github.com/symfony/event-dispatcher) and you can use it to extend calculation algorithms as you need. For example, you can increase shipping cost for a 10$.
+
+```php
+// place calculator creation code here
+
+$calculator->getDispatcher()->addListener(Events::AFTER_CALCULATE, function (AfterCalculateEvent $event) {
+    $event->getResult()->setShippingCost($event->getResult()->getShippingCost() + 10);
+});
+```
+
+What is what:
+- `Events::AFTER_CALCULATE` is an event calling then calculation ends and calculation result is ready;
+- `AfterCalculateEvent` is event object which contains calculation result and package. Look to other available events [here](/src/Event);
