@@ -81,7 +81,7 @@ What is what:
 
 ### How to extend a calculator?
 
-Shipping calculator using [symfony event dispatcher](https://github.com/symfony/event-dispatcher) and you can use it to extend calculation algorithms as you need. For example, you can increase shipping cost for a 10$.
+Shipping calculator uses [symfony event dispatcher](https://github.com/symfony/event-dispatcher) and you can use it to extend calculation algorithms as you need. For example, you can increase shipping cost by 10$.
 
 ```php
 // place calculator creation code here
