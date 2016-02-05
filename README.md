@@ -92,11 +92,11 @@ $calculator->getDispatcher()->addListener(Events::AFTER_CALCULATE, function (Aft
 ```
 
 What is what:
-- `Events::AFTER_CALCULATE` is an event calling then calculation ends and calculation result is ready;
-- `AfterCalculateEvent` is event object which contains calculation result and package. Look to other available events [here](/src/Event);
+- `Events::AFTER_CALCULATE` is an event calling when calculation ends and calculation result is ready;
+- `AfterCalculateEvent` is an event object which contains calculation result and package. Look to other available events [here](/src/Event);
 
 ### More ideas how to use and extend shipping calculator
 
 - create calculation handlers for other couriers and shipping methods;
 - create calculators and realize your own algorithms using handlers;
-- extend [models](/src/Model). For example i'm use it with [Doctrine ORM](https://github.com/doctrine/doctrine2) entities;
+- extend [models](/src/Model). For example i use it with [Doctrine ORM](https://github.com/doctrine/doctrine2) entities;
