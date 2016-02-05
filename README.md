@@ -23,7 +23,7 @@ and run ```composer install``` (or ```update```) to download all files.
 
 ## Usage
 
-### Base calculator creation
+### How to create a calculator?
 
 Example code below will create the calculator for a single shipment method.
 
@@ -39,3 +39,41 @@ What is what:
 - [$config](/src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php) contains configuration for the `DhlCalculatorHandler`
 - [BaseCalculator](/src/Calculator/BaseCalculator.php) is a wrapper for a calculation handlers, it contains an algorithm "How to use calculation handlers" and returns a calculation result
 
+### How to calculate a package shipping?
+
+Example code below will create a package and calculate shipping cost for Dhl Express.
+
+```php
+// previous example code here
+
+$weight = new Weight();
+$weight->setValue(10);
+$weight->setUnit('lb');
+
+$dimensions = new Dimensions();
+$dimensions->setLength(10);
+$dimensions->setWidth(10);
+$dimensions->setHeight(10);
+$dimensions->setUnit('in');
+
+$senderAddress = new Address();
+$senderAddress->setCountryCode('USA');
+
+$recipientAddress = new Address();
+$recipientAddress->setCountryCode('RUS');
+
+$package = new Package();
+$package->setWeight($weight);
+$package->setDimensions($dimensions);
+$package->setSenderAddress($senderAddress);
+$package->setRecipientAddress($recipientAddress);
+
+$result = $calculator->calculate($package);
+```
+
+What is what:
+- [Weight](/src/Model/Weight.php) contains information about physical weight.
+- [Dimensions](/src/Model/Dimensions.php) contains information about package box dimensions. It required to caluclate a volumutric weight of your package.
+- [$senderAddress](/src/Model/Address.php) and [$recipientAddress](/src/Model/Address.php) contains information about sender and recipient
+- [Package](/src/Model/Package.php) is a wrapper object to all objects above. You will need to pass this object to `calculate` method of your calculator
+- [$result](/src/Model/CalculationResult.php) contains your package and resulting calculation data
