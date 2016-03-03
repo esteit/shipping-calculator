@@ -19,3 +19,18 @@ EsteIt\ShippingCalculator\Model\Dimensions:
     width: 10
     height: 10
     unit: in
+  dimensions_11_10_9_in:
+    length: 11
+    width: 10
+    height: 9
+    unit: in
+  dimensions_9_11_10_in:
+    length: 9
+    width: 11
+    height: 10
+    unit: in
+  dimensions_10_9_11_in:
+    length: 10
+    width: 9
+    height: 11
+    unit: in
