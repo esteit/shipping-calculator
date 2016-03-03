@@ -17,6 +17,7 @@ before_install:
 
 after_script:
   - php bin/coveralls
+  - bin/test-reporter
 
 notifications:
   email: "demateus@gmail.com"
