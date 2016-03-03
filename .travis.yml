@@ -16,7 +16,6 @@ before_install:
   - composer install --dev --no-interaction --prefer-source
 
 after_script:
-  - php bin/coveralls
   - bin/test-reporter
 
 notifications:
