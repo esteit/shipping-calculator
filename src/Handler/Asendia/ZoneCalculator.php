@@ -1,6 +1,6 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\CalculatorHandler\Asendia;
+namespace EsteIt\ShippingCalculator\Handler\Asendia;
 
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use Moriony\Trivial\Math\MathInterface;

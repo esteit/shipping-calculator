@@ -2,8 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Tool;
 
-use EsteIt\ShippingCalculator\Model\Dimensions;
-use EsteIt\ShippingCalculator\Model\DimensionsInterface;
+use EsteIt\ShippingCalculator\Dimensions;
 use Moriony\Trivial\Math\MathInterface;
 
 class DimensionsNormalizer
@@ -19,10 +18,10 @@ class DimensionsNormalizer
     }
 
     /**
-     * @param DimensionsInterface $dimensions
+     * @param Dimensions $dimensions
      * @return Dimensions
      */
-    public function normalize(DimensionsInterface $dimensions)
+    public function normalize(Dimensions $dimensions)
     {
         $values = [$dimensions->getLength(), $dimensions->getWidth(), $dimensions->getHeight()];
         usort($values, [$this, 'sort']);

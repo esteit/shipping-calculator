@@ -2,14 +2,14 @@
 
 namespace EsteIt\ShippingCalculator\VolumetricWeightCalculator;
 
-use EsteIt\ShippingCalculator\Model\DimensionsInterface;
-use EsteIt\ShippingCalculator\Model\WeightInterface;
+use EsteIt\ShippingCalculator\Dimensions;
+use EsteIt\ShippingCalculator\Weight;
 
 interface VolumetricWeightCalculatorInterface
 {
     /**
-     * @param DimensionsInterface $dimensions
-     * @return WeightInterface
+     * @param Dimensions $dimensions
+     * @return Weight
      */
-    public function calculate(DimensionsInterface $dimensions);
+    public function calculate(Dimensions $dimensions);
 }

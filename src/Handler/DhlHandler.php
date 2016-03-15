@@ -1,22 +1,23 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\CalculatorHandler;
+namespace EsteIt\ShippingCalculator\Handler;
 
-use EsteIt\ShippingCalculator\CalculatorHandler\Asendia\ZoneCalculator;
-use EsteIt\ShippingCalculator\Configuration\AsendiaConfiguration;
+use EsteIt\ShippingCalculator\Address;
+use EsteIt\ShippingCalculator\Dimensions;
+use EsteIt\ShippingCalculator\Handler\Dhl\ZoneCalculator;
+use EsteIt\ShippingCalculator\Configuration\DhlConfiguration;
 use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
 use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
 use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
-use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
-use EsteIt\ShippingCalculator\Tool\UspsGirthCalculator;
-use EsteIt\ShippingCalculator\Model\AddressInterface;
-use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
 use EsteIt\ShippingCalculator\Model\ImportCountry;
-use EsteIt\ShippingCalculator\Model\PackageInterface;
+use EsteIt\ShippingCalculator\Package;
+use EsteIt\ShippingCalculator\Result;
+use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
+use EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
 use Moriony\Trivial\Converter\WeightConverter;
@@ -26,7 +27,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AsendiaCalculatorHandler implements CalculatorHandlerInterface
+class DhlHandler implements HandlerInterface
 {
     /**
      * @var array
@@ -37,7 +38,8 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     {
         $math = new NativeMath();
         $resolver = new OptionsResolver();
-        $dimensionsNormalizer = new DimensionsNormalizer($math);
+        $weightConverter = new WeightConverter($math);
+        $lengthConverter = new LengthConverter($math);
         $resolver
             ->setDefined([
                 'extra_data'
@@ -45,10 +47,10 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
             ->setDefaults([
                 'currency' => 'USD',
                 'math' => $math,
-                'weight_converter' => new WeightConverter($math),
-                'length_converter' => new LengthConverter($math),
-                'girth_calculator' => new UspsGirthCalculator($math, $dimensionsNormalizer),
-                'dimensions_normalizer' => $dimensionsNormalizer,
+                'weight_converter' => $weightConverter,
+                'length_converter' => $lengthConverter,
+                'volumetric_weight_calculator' => new DhlVolumetricWeightCalculator($math, $weightConverter, $lengthConverter),
+                'dimensions_normalizer' => new DimensionsNormalizer($math),
                 'extra_data' => null,
             ])
             ->setRequired([
@@ -56,14 +58,13 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
                 'import_countries',
                 'zone_calculators',
                 'currency',
-                'fuel_subcharge',
                 'math',
                 'weight_converter',
                 'length_converter',
                 'mass_unit',
                 'dimensions_unit',
-                'maximum_girth',
-                'maximum_dimension'
+                'maximum_weight',
+                'maximum_dimensions',
             ])
             ->setAllowedTypes([
                 'export_countries' => 'array',
@@ -73,49 +74,51 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
                 'math' => 'Moriony\Trivial\Math\MathInterface',
                 'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'girth_calculator' => 'EsteIt\ShippingCalculator\Tool\UspsGirthCalculator',
+                'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator',
                 'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
             ]);
-
 
         $resolver->setNormalizer('import_countries', $this->createImportCountriesNormalizer());
         $resolver->setNormalizer('export_countries', $this->createExportCountriesNormalizer());
         $resolver->setNormalizer('zone_calculators', $this->createZoneCalculatorsNormalizer());
+        $resolver->setNormalizer('maximum_dimensions', $this->createDimensionsNormalizer());
 
         $this->options = $resolver->resolve($options);
     }
 
     /**
-     * @param CalculationResultInterface $result
-     * @param PackageInterface $package
+     * @param Result $result
+     * @param Package $package
      * @return mixed
      */
-    public function visit(CalculationResultInterface $result, PackageInterface $package)
+    public function calculate(Result $result, Package $package)
     {
         $this->validateSenderAddress($package->getSenderAddress());
         $this->validateRecipientAddress($package->getRecipientAddress());
         $this->validateDimensions($package);
         $this->validateWeight($package);
 
-        $zoneCalculator = $this->getZoneCalculator($package);
-
         $weight = $package->getWeight();
+        $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions());
+
         $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->get('mass_unit'));
+        $volumetricWeight = $this->getWeightConverter()->convert($volumetricWeight->getValue(), $volumetricWeight->getUnit(), $this->get('mass_unit'));
 
         $math = $this->getMath();
-        $cost = $zoneCalculator->calculate($weight);
-        $wholeWeight = $math->roundUp($weight);
-        $fuelCost = $math->mul($wholeWeight, $this->get('fuel_subcharge'));
-        $total = $math->sum($cost, $fuelCost);
+        if ($math->greaterThan($volumetricWeight, $weight)) {
+            $weight = $volumetricWeight;
+        }
 
-        $result->setShippingCost($total);
-        $result->setCurrency($this->get('currency'));
+        $zoneCalculator = $this->getZoneCalculator($package);
+        $total = $zoneCalculator->calculate($weight);
+
+        $result->set('shipping_cost', $total);
     }
 
     /**
-     * @param AddressInterface $address
+     * @param Address $address
      */
-    public function validateSenderAddress(AddressInterface $address)
+    public function validateSenderAddress(Address $address)
     {
         try {
             $this->getExportCountry($address->getCountryCode());
@@ -125,9 +128,9 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     }
 
     /**
-     * @param AddressInterface $address
+     * @param Address $address
      */
-    public function validateRecipientAddress(AddressInterface $address)
+    public function validateRecipientAddress(Address $address)
     {
         try {
             $importCountry = $this->getImportCountry($address->getCountryCode());
@@ -141,41 +144,54 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     }
 
     /**
-     * @param PackageInterface $package
+     * @param Package $package
      */
-    public function validateDimensions(PackageInterface $package)
+    public function validateDimensions(Package $package)
     {
         $math = $this->getMath();
         $converter = $this->getLengthConverter();
-        $girthCalculator = $this->getGirthCalculator();
+        $dimensions = $package->getDimensions();
 
-        $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
-        $maximumDimension = $converter->convert($this->get('maximum_dimension'), $this->get('dimensions_unit'), $dimensions->getUnit());
-        if ($math->greaterThan($dimensions->getLength(), $maximumDimension)) {
-            throw new InvalidDimensionsException('Side length limit is exceeded.');
+        $invalidDimensions = $math->lessOrEqualThan($dimensions->getHeight(), 0)
+            || $math->lessOrEqualThan($dimensions->getLength(), 0)
+            || $math->lessOrEqualThan($dimensions->getWidth(), 0);
+
+        if ($invalidDimensions) {
+            throw new InvalidDimensionsException('Dimensions must be greater than zero.');
         }
 
-        $girth = $girthCalculator->calculate($dimensions);
-        $maxGirth = $converter->convert($this->get('maximum_girth'), $this->get('dimensions_unit'), $dimensions->getUnit());
-        if ($math->greaterThan($girth->getValue(), $maxGirth)) {
-            throw new InvalidDimensionsException('Girth limit is exceeded.');
+        $maxDimensions = $this->getDimensionsNormalizer()->normalize($this->get('maximum_dimensions'));
+        $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
+
+        $maxLength = $converter->convert($maxDimensions->getLength(), $this->get('dimensions_unit'), $dimensions->getUnit());
+        if ($math->greaterThan($dimensions->getLength(), $maxLength)) {
+            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
+        }
+
+        $maxWidth = $converter->convert($maxDimensions->getWidth(), $this->get('dimensions_unit'), $dimensions->getUnit());
+        if ($math->greaterThan($dimensions->getWidth(), $maxWidth)) {
+            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
+        }
+
+        $maxHeight = $converter->convert($maxDimensions->getHeight(), $this->get('dimensions_unit'), $dimensions->getUnit());
+        if ($math->greaterThan($dimensions->getHeight(), $maxHeight)) {
+            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
         }
     }
 
-    public function validateWeight(PackageInterface $package)
+    public function validateWeight(Package $package)
     {
         $math = $this->getMath();
         $converter = $this->getWeightConverter();
-        $country = $this->getImportCountry($package->getRecipientAddress()->getCountryCode());
 
-        $countryMaxWeight = $converter->convert($country->getMaximumWeight(), $this->get('mass_unit'), $package->getWeight()->getUnit());
-        if ($math->greaterThan($package->getWeight()->getValue(), $countryMaxWeight)) {
+        $maxWeight = $converter->convert($this->get('maximum_weight'), $this->get('mass_unit'), $package->getWeight()->getUnit());
+        if ($math->greaterThan($package->getWeight()->getValue(), $maxWeight)) {
             throw new InvalidWeightException('Sender country weight limit is exceeded.');
         }
     }
 
     /**
-     * @param PackageInterface $package
+     * @param Package $package
      * @return ZoneCalculator
      */
     public function getZoneCalculator($package)
@@ -221,9 +237,17 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     public static function create(array $config)
     {
         $processor = new Processor();
-        $processedConfig = $processor->processConfiguration(new AsendiaConfiguration(), [$config]);
-
+        $processedConfig = $processor->processConfiguration(new DhlConfiguration(), [$config]);
         return new static($processedConfig);
+    }
+    
+    /**
+     * @param mixed $name
+     * @return mixed null
+     */
+    public function get($name)
+    {
+        return $this->options && array_key_exists($name, $this->options) ? $this->options[$name] : null;
     }
 
     /**
@@ -251,11 +275,11 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     }
 
     /**
-     * @return UspsGirthCalculator
+     * @return DhlVolumetricWeightCalculator
      */
-    protected function getGirthCalculator()
+    protected function getVolumetricWeightCalculator()
     {
-        return $this->get('girth_calculator');
+        return $this->get('volumetric_weight_calculator');
     }
 
     /**
@@ -279,7 +303,6 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
                     $country = new ImportCountry();
                     $country->setCode($config['code']);
                     $country->setZone($config['zone']);
-                    $country->setMaximumWeight($config['maximum_weight']);
                 }
                 $normalized[$country->getCode()] = $country;
             }
@@ -324,11 +347,19 @@ class AsendiaCalculatorHandler implements CalculatorHandlerInterface
     }
 
     /**
-     * @param mixed $name
-     * @return mixed null
+     * @return \Closure
      */
-    public function get($name)
+    protected function createDimensionsNormalizer()
     {
-        return $this->options && array_key_exists($name, $this->options) ? $this->options[$name] : null;
+        return function (Options $options, $value) {
+            if (!$value instanceof Dimensions) {
+                $config = $value;
+                $value = new Dimensions();
+                $value->setLength(reset($config));
+                $value->setWidth(next($config));
+                $value->setHeight(next($config));
+            }
+            return $value;
+        };
     }
 }

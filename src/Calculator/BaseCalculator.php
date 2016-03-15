@@ -2,31 +2,28 @@
 
 namespace EsteIt\ShippingCalculator\Calculator;
 
-use EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface;
+use EsteIt\ShippingCalculator\Handler\HandlerInterface;
 use EsteIt\ShippingCalculator\Event\AfterHandleEvent;
 use EsteIt\ShippingCalculator\Event\BeforeHandleEvent;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
-use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
 use EsteIt\ShippingCalculator\Event\AfterCalculateEvent;
 use EsteIt\ShippingCalculator\Event\BeforeCalculateEvent;
 use EsteIt\ShippingCalculator\Event\Events;
-use EsteIt\ShippingCalculator\Model\PackageInterface;
-use EsteIt\ShippingCalculator\Exception\BasicExceptionInterface;
+use EsteIt\ShippingCalculator\Package;
+use EsteIt\ShippingCalculator\Result;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class BaseCalculator implements CalculatorInterface
 {
-    const RESULT_INTERFACE = 'EsteIt\ShippingCalculator\Model\CalculationResultInterface';
-
     /**
      * @var EventDispatcherInterface
      */
     protected $dispatcher;
 
     /**
-     * @var CalculatorHandlerInterface
+     * @var HandlerInterface
      */
     protected $handler;
 
@@ -41,16 +38,16 @@ class BaseCalculator implements CalculatorInterface
         $resolver
             ->setDefaults([
                 'dispatcher' => new EventDispatcher(),
-                'result_class' => 'EsteIt\ShippingCalculator\Model\CalculationResult',
+                'result_class' => Result::class,
             ])
             ->setRequired([
                 'dispatcher',
                 'handler',
             ])
             ->setAllowedTypes([
-                'dispatcher' => 'Symfony\Component\EventDispatcher\EventDispatcherInterface',
+                'dispatcher' => EventDispatcherInterface::class,
                 'result_class' => 'string',
-                'handler' => 'EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface',
+                'handler' => HandlerInterface::class,
             ]);
 
         $options = $resolver->resolve($options);
@@ -89,9 +86,11 @@ class BaseCalculator implements CalculatorInterface
      */
     public function setResultClass($class)
     {
-        $interfaces = class_implements($class);
-        if (!$interfaces || !in_array(self::RESULT_INTERFACE, $interfaces)) {
-            throw new InvalidArgumentException(sprintf('Result class must implement interface "%s"', self::RESULT_INTERFACE));
+        $parents = class_parents($class);
+        $parents[] = $class;
+
+        if (!in_array(Result::class, $parents)) {
+            throw new InvalidArgumentException(sprintf('Result class must extends class "%s"', Result::class));
         }
         $this->resultClass = $class;
 
@@ -104,10 +103,10 @@ class BaseCalculator implements CalculatorInterface
     }
 
     /**
-     * @param CalculatorHandlerInterface $handler
+     * @param HandlerInterface $handler
      * @return $this
      */
-    public function setHandler(CalculatorHandlerInterface $handler)
+    public function setHandler(HandlerInterface $handler)
     {
         $this->handler = $handler;
 
@@ -115,7 +114,7 @@ class BaseCalculator implements CalculatorInterface
     }
 
     /**
-     * @return CalculatorHandlerInterface
+     * @return HandlerInterface
      */
     public function getHandler()
     {
@@ -123,23 +122,19 @@ class BaseCalculator implements CalculatorInterface
     }
 
     /**
-     * @param PackageInterface $package
-     * @return CalculationResultInterface
+     * @param Package $package
+     * @return Result
      */
-    public function calculate(PackageInterface $package)
+    public function calculate(Package $package)
     {
         $this->getDispatcher()->dispatch(Events::BEFORE_CALCULATE, new BeforeCalculateEvent($this, $package));
 
         $result = $this->createResult();
         $result->setPackage($package);
 
-        try {
-            $this->getDispatcher()->dispatch(Events::BEFORE_HANDLE, new BeforeHandleEvent($this, $this->getHandler(), $package));
-            $this->getHandler()->visit($result, $package);
-            $this->getDispatcher()->dispatch(Events::AFTER_HANDLE, new AfterHandleEvent($this, $this->getHandler(), $result));
-        } catch (BasicExceptionInterface $e) {
-            $result->setError($e);
-        }
+        $this->getDispatcher()->dispatch(Events::BEFORE_HANDLE, new BeforeHandleEvent($this, $this->getHandler(), $package));
+        $this->getHandler()->calculate($result, $package);
+        $this->getDispatcher()->dispatch(Events::AFTER_HANDLE, new AfterHandleEvent($this, $this->getHandler(), $result));
 
         $this->getDispatcher()->dispatch(Events::AFTER_CALCULATE, new AfterCalculateEvent($this, $result));
 
@@ -147,7 +142,7 @@ class BaseCalculator implements CalculatorInterface
     }
 
     /**
-     * @return CalculationResultInterface
+     * @return Result
      */
     protected function createResult()
     {

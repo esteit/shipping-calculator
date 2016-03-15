@@ -1,20 +1,20 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\CalculatorHandler;
-;
-use EsteIt\ShippingCalculator\Configuration\IParcelConfiguration;
+namespace EsteIt\ShippingCalculator\Handler;
+
+use EsteIt\ShippingCalculator\Address;
+use EsteIt\ShippingCalculator\Configuration\AramexConfiguration;
 use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
 use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
-use EsteIt\ShippingCalculator\Model\AddressInterface;
+use EsteIt\ShippingCalculator\Package;
+use EsteIt\ShippingCalculator\Result;
 use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator;
-use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
 use EsteIt\ShippingCalculator\Model\ImportCountry;
-use EsteIt\ShippingCalculator\Model\PackageInterface;
-use EsteIt\ShippingCalculator\VolumetricWeightCalculator\IParcelVolumetricWeightCalculator;
+use EsteIt\ShippingCalculator\VolumetricWeightCalculator\AramexVolumetricWeightCalculator;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
 use Moriony\Trivial\Converter\WeightConverter;
@@ -24,7 +24,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class IParcelCalculatorHandler implements CalculatorHandlerInterface
+class AramexHandler implements HandlerInterface
 {
     /**
      * @var array
@@ -49,7 +49,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
                 'weight_converter' => $weightConverter,
                 'length_converter' => $lengthConverter,
                 'perimeter_calculator' => new MaximumPerimeterCalculator($math, $dimensionsNormalizer),
-                'volumetric_weight_calculator' => new IParcelVolumetricWeightCalculator($math, $weightConverter, $lengthConverter),
+                'volumetric_weight_calculator' => new AramexVolumetricWeightCalculator($math, $weightConverter, $lengthConverter),
                 'dimensions_normalizer' => $dimensionsNormalizer,
                 'extra_data' => null,
             ])
@@ -76,7 +76,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
                 'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
                 'perimeter_calculator' => 'EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator',
-                'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\IParcelVolumetricWeightCalculator',
+                'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\AramexVolumetricWeightCalculator',
                 'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
             ]);
 
@@ -89,11 +89,11 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
     }
 
     /**
-     * @param CalculationResultInterface $result
-     * @param PackageInterface $package
+     * @param Result $result
+     * @param Package $package
      * @return mixed
      */
-    public function visit(CalculationResultInterface $result, PackageInterface $package)
+    public function calculate(Result $result, Package $package)
     {
         $this->validateSenderAddress($package->getSenderAddress());
         $this->validateRecipientAddress($package->getRecipientAddress());
@@ -102,11 +102,10 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
         $this->validateWeight($package);
         $price = $this->getPrice($package);
 
-        $result->setShippingCost($price);
-        $result->setCurrency($this->get('currency'));
+        $result->set('shipping_cost', $price);
     }
 
-    public function validateSenderAddress(AddressInterface $address)
+    public function validateSenderAddress(Address $address)
     {
         $countries = $this->get('export_countries');
         if (!array_key_exists($address->getCountryCode(), $countries)) {
@@ -114,7 +113,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
         }
     }
 
-    public function validateRecipientAddress(AddressInterface $address)
+    public function validateRecipientAddress(Address $address)
     {
         $importCountry = $this->detectImportCountry($address);
         if (is_null($importCountry)) {
@@ -126,7 +125,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
         }
     }
 
-    public function validateMaximumDimension(PackageInterface $package)
+    public function validateMaximumDimension(Package $package)
     {
         $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
         $maximumDimension = $this->getLengthConverter()->convert($this->get('maximum_dimension'), $this->get('dimensions_unit'), $dimensions->getUnit());
@@ -135,7 +134,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
         }
     }
 
-    public function validateMaximumPerimeter(PackageInterface $package)
+    public function validateMaximumPerimeter(Package $package)
     {
         $dimensions = $package->getDimensions();
         $perimeter = $this->getPerimeterCalculator()->calculate($dimensions);
@@ -145,7 +144,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
         }
     }
 
-    public function validateWeight(PackageInterface $package)
+    public function validateWeight(Package $package)
     {
         $importCountry = $this->detectImportCountry($package->getRecipientAddress());
 
@@ -161,7 +160,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
         }
     }
 
-    public function getPrice(PackageInterface $package)
+    public function getPrice(Package $package)
     {
         $weight = $package->getWeight();
         $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions());
@@ -197,16 +196,16 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
     public static function create(array $config)
     {
         $processor = new Processor();
-        $processedConfig = $processor->processConfiguration(new IParcelConfiguration(), [$config]);
+        $processedConfig = $processor->processConfiguration(new AramexConfiguration(), [$config]);
 
         return new static($processedConfig);
     }
 
     /**
-     * @param AddressInterface $address
+     * @param Address $address
      * @return ImportCountry|null
      */
-    protected function detectImportCountry(AddressInterface $address)
+    protected function detectImportCountry(Address $address)
     {
         $countries = $this->get('import_countries');
         $importCountry = null;
@@ -249,7 +248,7 @@ class IParcelCalculatorHandler implements CalculatorHandlerInterface
     }
 
     /**
-     * @return IParcelVolumetricWeightCalculator
+     * @return AramexVolumetricWeightCalculator
      */
     protected function getVolumetricWeightCalculator()
     {

@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Model;
+namespace EsteIt\ShippingCalculator;
 
-class Address implements AddressInterface
+class Address
 {
     protected $countryCode;
 

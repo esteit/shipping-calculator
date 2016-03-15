@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Model;
+namespace EsteIt\ShippingCalculator;
 
-class Weight implements WeightInterface
+class Length
 {
     protected $value;
     protected $unit;

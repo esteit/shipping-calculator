@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Model;
+namespace EsteIt\ShippingCalculator;
 
-class Dimensions implements DimensionsInterface
+class Dimensions
 {
     protected $length;
     protected $width;

@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Model;
+namespace EsteIt\ShippingCalculator;
 
-class Package implements PackageInterface
+class Package
 {
     protected $weight;
     protected $senderAddress;
@@ -10,7 +10,7 @@ class Package implements PackageInterface
     protected $dimensions;
 
     /**
-     * @param WeightInterface $weight
+     * @param Weight $weight
      * @return $this
      */
     public function setWeight($weight)
@@ -21,7 +21,7 @@ class Package implements PackageInterface
     }
 
     /**
-     * @return WeightInterface
+     * @return Weight
      */
     public function getWeight()
     {
@@ -29,7 +29,7 @@ class Package implements PackageInterface
     }
 
     /**
-     * @param DimensionsInterface $dimensions
+     * @param Dimensions $dimensions
      * @return $this
      */
     public function setDimensions($dimensions)
@@ -40,7 +40,7 @@ class Package implements PackageInterface
     }
 
     /**
-     * @return DimensionsInterface
+     * @return Dimensions
      */
     public function getDimensions()
     {
@@ -48,7 +48,7 @@ class Package implements PackageInterface
     }
 
     /**
-     * @param AddressInterface $address
+     * @param Address $address
      * @return $this
      */
     public function setSenderAddress($address)
@@ -59,7 +59,7 @@ class Package implements PackageInterface
     }
 
     /**
-     * @return AddressInterface
+     * @return Address
      */
     public function getSenderAddress()
     {
@@ -67,7 +67,7 @@ class Package implements PackageInterface
     }
 
     /**
-     * @param AddressInterface $address
+     * @param Address $address
      * @return $this
      */
     public function setRecipientAddress($address)
@@ -78,7 +78,7 @@ class Package implements PackageInterface
     }
 
     /**
-     * @return AddressInterface
+     * @return Address
      */
     public function getRecipientAddress()
     {
