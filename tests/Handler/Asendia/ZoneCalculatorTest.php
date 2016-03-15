@@ -1,8 +1,8 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler\Dhl;
+namespace EsteIt\ShippingCalculator\Tests\Handler\Asendia;
 
-use EsteIt\ShippingCalculator\CalculatorHandler\Dhl\ZoneCalculator;
+use EsteIt\ShippingCalculator\Handler\Asendia\ZoneCalculator;
 
 /**
  * @group unit
@@ -21,7 +21,6 @@ class ZoneCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $zoneCalculator = new ZoneCalculator([
             'name' => 1,
-            'overweight_rate_factor' => 10,
             'weight_prices' => [
                 ['weight' => 1, 'price' => 31.3],
                 ['weight' => 2, 'price' => 34.90],
@@ -53,12 +52,7 @@ class ZoneCalculatorTest extends \PHPUnit_Framework_TestCase
     public function testGetPriceException($exceptionClass, $exceptionMessage, $weight)
     {
         $this->setExpectedException($exceptionClass, $exceptionMessage);
-
-        $zoneCalculator = new ZoneCalculator([
-            'name' => 1,
-            'weight_prices' => [],
-        ]);
-        $zoneCalculator->calculate($weight);
+        $this->zoneCalculator->calculate($weight);
     }
 
     public function provideCalculate()
@@ -68,8 +62,6 @@ class ZoneCalculatorTest extends \PHPUnit_Framework_TestCase
             [4, 42.00],
             [4.5, 45.55],
             [10, 62.03],
-            [20, 200],
-            [20.5, 210],
         ];
     }
 

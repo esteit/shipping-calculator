@@ -1,14 +1,16 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler;
+namespace EsteIt\ShippingCalculator\Tests\Handler;
 
-use EsteIt\ShippingCalculator\CalculatorHandler\AramexCalculatorHandler;
+use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
+use EsteIt\ShippingCalculator\Handler\AramexHandler;
 use EsteIt\ShippingCalculator\Model\CalculationResult;
+use EsteIt\ShippingCalculator\Result;
 
 /**
  * @group unit
  */
-class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
+class AramexHandlerTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
 
@@ -28,7 +30,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
-        $calculator = AramexCalculatorHandler::create([
+        $calculator = AramexHandler::create([
             'zones' => [
                 [
                     'name' => 1,
@@ -50,15 +52,15 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_weight' => 60,
         ]);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculatorHandler\AramexCalculatorHandler', $calculator);
+        $this->assertInstanceOf(AramexHandler::class, $calculator);
     }
 
     /**
      * @dataProvider provideVisit
      */
-    public function testVisit($package, $expectedCost)
+    public function testCalculate($package, $expectedCost)
     {
-        $calculator = new AramexCalculatorHandler([
+        $calculator = new AramexHandler([
             'zones' => [
                 [
                     'name' => 1,
@@ -81,13 +83,12 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_weight' => 60,
         ]);
 
-        $result = new CalculationResult();
-        $calculator->visit($result, $package);
+        $result = new Result();
+        $calculator->calculate($result, $package);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
-        $this->assertNull($result->getError());
-        $this->assertSame($expectedCost, $result->getShippingCost());
-        $this->assertSame('USD', $result->getCurrency());
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertEmpty($result->getViolations());
+        $this->assertSame($expectedCost, $result->get('shipping_cost'));
     }
 
     /**
@@ -97,7 +98,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException($exceptionClass, $exceptionMessage);
 
-        $calculator = new AramexCalculatorHandler($calculatorOptions);
+        $calculator = new AramexHandler($calculatorOptions);
         $calculator->getPrice($package);
     }
 
@@ -108,7 +109,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
 
-        $calculator = new AramexCalculatorHandler($calculatorOptions);
+        $calculator = new AramexHandler($calculatorOptions);
         $calculator->validateSenderAddress($address);
     }
 
@@ -119,7 +120,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
 
-        $calculator = new AramexCalculatorHandler($calculatorOptions);
+        $calculator = new AramexHandler($calculatorOptions);
         $calculator->validateRecipientAddress($address);
     }
 
@@ -130,7 +131,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidDimensionsException', 'Side length limit is exceeded.');
 
-        $calculator = new AramexCalculatorHandler($calculatorOptions);
+        $calculator = new AramexHandler($calculatorOptions);
         $calculator->validateMaximumDimension($package);
     }
 
@@ -141,7 +142,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidDimensionsException', 'Maximum perimeter limit is exceeded.');
 
-        $calculator = new AramexCalculatorHandler($calculatorOptions);
+        $calculator = new AramexHandler($calculatorOptions);
         $calculator->validateMaximumPerimeter($package);
     }
 
@@ -152,7 +153,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', $exceptionMessage);
 
-        $calculator = new AramexCalculatorHandler($calculatorOptions);
+        $calculator = new AramexHandler($calculatorOptions);
         $calculator->validateWeight($package);
     }
 
@@ -328,7 +329,7 @@ class AramexCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
         return [
             [
                 'Can not calculate shipping for this weight.',
-                'EsteIt\ShippingCalculator\Exception\InvalidWeightException',
+                InvalidWeightException::class,
                 $calculatorOptions,
                 $this->getFixture('package_3')
             ],

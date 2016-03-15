@@ -1,14 +1,15 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler;
+namespace EsteIt\ShippingCalculator\Tests\Handler;
 
-use EsteIt\ShippingCalculator\CalculatorHandler\IParcelCalculatorHandler;
+use EsteIt\ShippingCalculator\Handler\IParcelHandler;
 use EsteIt\ShippingCalculator\Model\CalculationResult;
+use EsteIt\ShippingCalculator\Result;
 
 /**
  * @group unit
  */
-class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
+class IParcelHandlerTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
 
@@ -28,7 +29,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
-        $calculator = IParcelCalculatorHandler::create([
+        $calculator = IParcelHandler::create([
             'zones' => [
                 [
                     'name' => 1,
@@ -50,7 +51,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_weight' => 60,
         ]);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculatorHandler\IParcelCalculatorHandler', $calculator);
+        $this->assertInstanceOf(IParcelHandler::class, $calculator);
     }
 
     /**
@@ -58,7 +59,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testVisit($package, $expectedCost)
     {
-        $calculator = new IParcelCalculatorHandler([
+        $calculator = new IParcelHandler([
             'zones' => [
                 [
                     'name' => 1,
@@ -81,13 +82,12 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_weight' => 60,
         ]);
 
-        $result = new CalculationResult();
-        $calculator->visit($result, $package);
+        $result = new Result();
+        $calculator->calculate($result, $package);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
-        $this->assertNull($result->getError());
-        $this->assertSame($expectedCost, $result->getShippingCost());
-        $this->assertSame('USD', $result->getCurrency());
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertEmpty($result->getViolations());
+        $this->assertSame($expectedCost, $result->get('shipping_cost'));
     }
 
     /**
@@ -97,7 +97,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException($exceptionClass, $exceptionMessage);
 
-        $calculator = new IParcelCalculatorHandler($calculatorOptions);
+        $calculator = new IParcelHandler($calculatorOptions);
         $calculator->getPrice($package);
     }
 
@@ -108,7 +108,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
 
-        $calculator = new IParcelCalculatorHandler($calculatorOptions);
+        $calculator = new IParcelHandler($calculatorOptions);
         $calculator->validateSenderAddress($address);
     }
 
@@ -119,7 +119,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
 
-        $calculator = new IParcelCalculatorHandler($calculatorOptions);
+        $calculator = new IParcelHandler($calculatorOptions);
         $calculator->validateRecipientAddress($address);
     }
 
@@ -130,7 +130,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidDimensionsException', 'Side length limit is exceeded.');
 
-        $calculator = new IParcelCalculatorHandler($calculatorOptions);
+        $calculator = new IParcelHandler($calculatorOptions);
         $calculator->validateMaximumDimension($package);
     }
 
@@ -141,7 +141,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidDimensionsException', 'Maximum perimeter limit is exceeded.');
 
-        $calculator = new IParcelCalculatorHandler($calculatorOptions);
+        $calculator = new IParcelHandler($calculatorOptions);
         $calculator->validateMaximumPerimeter($package);
     }
 
@@ -152,7 +152,7 @@ class IParcelCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', $exceptionMessage);
 
-        $calculator = new IParcelCalculatorHandler($calculatorOptions);
+        $calculator = new IParcelHandler($calculatorOptions);
         $calculator->validateWeight($package);
     }
 

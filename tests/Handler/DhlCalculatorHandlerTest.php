@@ -1,15 +1,16 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler;
+namespace EsteIt\ShippingCalculator\Tests\Handler;
 
-use EsteIt\ShippingCalculator\CalculatorHandler\DhlCalculatorHandler;
-use EsteIt\ShippingCalculator\CalculatorHandler\Dhl\ZoneCalculator;
+use EsteIt\ShippingCalculator\Handler\DhlHandler;
+use EsteIt\ShippingCalculator\Handler\Dhl\ZoneCalculator;
 use EsteIt\ShippingCalculator\Model\CalculationResult;
+use EsteIt\ShippingCalculator\Result;
 
 /**
  * @group unit
  */
-class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
+class DhlHandlerTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
 
@@ -29,7 +30,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
-        $calculator = DhlCalculatorHandler::create([
+        $calculator = DhlHandler::create([
             'zone_calculators' => [
                 [
                     'name' => 1,
@@ -54,13 +55,13 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_weight' => 60,
         ]);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculatorHandler\DhlCalculatorHandler', $calculator);
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\Handler\DhlHandler', $calculator);
     }
 
     /**
      * @dataProvider provideVisit
      */
-    public function testVisit($package, $expectedCost)
+    public function testCalculate($package, $expectedCost)
     {
         $zoneCalculator = new ZoneCalculator([
             'name' => 1,
@@ -70,7 +71,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             ],
         ]);
 
-        $calculator = new DhlCalculatorHandler([
+        $calculator = new DhlHandler([
             'zone_calculators' => [$zoneCalculator],
             'import_countries' => [$this->getFixture('import_country_usa')],
             'export_countries' => [$this->getFixture('export_country_usa')],
@@ -79,13 +80,12 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_dimensions' => [40, 40, 40],
             'maximum_weight' => 60,
         ]);
-        $result = new CalculationResult();
-        $calculator->visit($result, $package);
+        $result = new Result();
+        $calculator->calculate($result, $package);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
-        $this->assertNull($result->getError());
-        $this->assertSame($expectedCost, $result->getShippingCost());
-        $this->assertSame('USD', $result->getCurrency());
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertEmpty($result->getViolations());
+        $this->assertSame($expectedCost, $result->get('shipping_cost'));
     }
 
     /**
@@ -95,7 +95,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
 
-        $calculator = new DhlCalculatorHandler($calculatorOptions);
+        $calculator = new DhlHandler($calculatorOptions);
         $calculator->validateSenderAddress($address);
     }
 
@@ -106,7 +106,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
 
-        $calculator = new DhlCalculatorHandler($calculatorOptions);
+        $calculator = new DhlHandler($calculatorOptions);
         $calculator->validateRecipientAddress($address);
     }
 
@@ -117,7 +117,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidDimensionsException', $exceptionMessage);
 
-        $calculator = new DhlCalculatorHandler([
+        $calculator = new DhlHandler([
             'zone_calculators' => [],
             'import_countries' => [$this->getFixture('import_country_usa')],
             'export_countries' => [$this->getFixture('export_country_usa')],
@@ -133,7 +133,7 @@ class DhlCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', 'Sender country weight limit is exceeded.');
 
-        $calculator = new DhlCalculatorHandler([
+        $calculator = new DhlHandler([
             'zone_calculators' => [],
             'import_countries' => [$this->getFixture('import_country_usa')],
             'export_countries' => [$this->getFixture('export_country_usa')],

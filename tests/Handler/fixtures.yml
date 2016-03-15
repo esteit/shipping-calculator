@@ -10,7 +10,7 @@ EsteIt\ShippingCalculator\Model\ExportCountry:
   export_country_rus:
     code: RUS
 
-EsteIt\ShippingCalculator\Model\Weight:
+EsteIt\ShippingCalculator\Weight:
   weight_10_kg:
     value: 10
     unit: lb
@@ -24,7 +24,7 @@ EsteIt\ShippingCalculator\Model\Weight:
     value: -1
     unit: lb
 
-EsteIt\ShippingCalculator\Model\Dimensions:
+EsteIt\ShippingCalculator\Dimensions:
   dimensions_21_10_10_in:
     length: 21
     width: 10
@@ -56,7 +56,7 @@ EsteIt\ShippingCalculator\Model\Dimensions:
     height: 0
     unit: in
 
-EsteIt\ShippingCalculator\Model\Address:
+EsteIt\ShippingCalculator\Address:
   usa_address:
     countryCode: USA
   french_address:
@@ -64,7 +64,7 @@ EsteIt\ShippingCalculator\Model\Address:
   russian_address:
     countryCode: RUS
 
-EsteIt\ShippingCalculator\Model\Package:
+EsteIt\ShippingCalculator\Package:
   package_1:
     weight: "@weight_10_kg"
     senderAddress: "@usa_address"

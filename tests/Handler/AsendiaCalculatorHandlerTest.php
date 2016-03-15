@@ -1,15 +1,16 @@
 <?php
 
-namespace EsteIt\ShippingCalculator\Tests\CalculatorHandler;
+namespace EsteIt\ShippingCalculator\Tests\Handler;
 
-use EsteIt\ShippingCalculator\CalculatorHandler\AsendiaCalculatorHandler;
-use EsteIt\ShippingCalculator\CalculatorHandler\Asendia\ZoneCalculator;
+use EsteIt\ShippingCalculator\Handler\AsendiaHandler;
+use EsteIt\ShippingCalculator\Handler\Asendia\ZoneCalculator;
 use EsteIt\ShippingCalculator\Model\CalculationResult;
+use EsteIt\ShippingCalculator\Result;
 
 /**
  * @group unit
  */
-class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
+class AsendiaHandlerTest extends \PHPUnit_Framework_TestCase
 {
     protected $fixtures;
 
@@ -29,7 +30,7 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testCreate()
     {
-        $calculator = AsendiaCalculatorHandler::create([
+        $calculator = AsendiaHandler::create([
             'zone_calculators' => [
                 [
                     'name' => 1,
@@ -55,10 +56,10 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_girth' => 77.755,
         ]);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\CalculatorHandler\AsendiaCalculatorHandler', $calculator);
+        $this->assertInstanceOf('EsteIt\ShippingCalculator\Handler\AsendiaHandler', $calculator);
     }
 
-    public function testVisit()
+    public function testCalculate()
     {
         $zoneCalculator = new ZoneCalculator([
             'name' => 1,
@@ -67,7 +68,7 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             ],
         ]);
 
-        $calculator = new AsendiaCalculatorHandler([
+        $calculator = new AsendiaHandler([
             'zone_calculators' => [$zoneCalculator],
             'import_countries' => [$this->getFixture('import_country_usa')],
             'export_countries' => [$this->getFixture('export_country_usa')],
@@ -78,14 +79,12 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_girth' => 77.755,
         ]);
         $package = $this->getFixture('package_1');
-        $result = new CalculationResult();
+        $result = new Result();
 
-        $calculator->visit($result, $package);
+        $calculator->calculate($result, $package);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
-        $this->assertNull($result->getError());
-        $this->assertSame(22.1, $result->getShippingCost());
-        $this->assertSame('USD', $result->getCurrency());
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertSame(22.1, $result->get('shipping_cost'));
     }
 
     /**
@@ -95,7 +94,7 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
 
-        $calculator = new AsendiaCalculatorHandler($calculatorOptions);
+        $calculator = new AsendiaHandler($calculatorOptions);
         $calculator->validateSenderAddress($address);
     }
 
@@ -106,7 +105,7 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
 
-        $calculator = new AsendiaCalculatorHandler($calculatorOptions);
+        $calculator = new AsendiaHandler($calculatorOptions);
         $calculator->validateRecipientAddress($address);
     }
 
@@ -117,7 +116,7 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException($exceptionClass, $exceptionMessage);
 
-        $calculator = new AsendiaCalculatorHandler($calculatorOptions);
+        $calculator = new AsendiaHandler($calculatorOptions);
         $calculator->validateDimensions($package);
     }
 
@@ -125,7 +124,7 @@ class AsendiaCalculatorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', 'Sender country weight limit is exceeded.');
 
-        $calculator = new AsendiaCalculatorHandler([
+        $calculator = new AsendiaHandler([
             'zone_calculators' => [],
             'import_countries' => [$this->getFixture('import_country_usa')],
             'export_countries' => [$this->getFixture('export_country_usa')],
