@@ -128,14 +128,11 @@ class BaseCalculator implements CalculatorInterface
     public function calculate(Package $package)
     {
         $this->getDispatcher()->dispatch(Events::BEFORE_CALCULATE, new BeforeCalculateEvent($this, $package));
-
         $result = $this->createResult();
         $result->setPackage($package);
-
         $this->getDispatcher()->dispatch(Events::BEFORE_HANDLE, new BeforeHandleEvent($this, $this->getHandler(), $package));
         $this->getHandler()->calculate($result, $package);
         $this->getDispatcher()->dispatch(Events::AFTER_HANDLE, new AfterHandleEvent($this, $this->getHandler(), $result));
-
         $this->getDispatcher()->dispatch(Events::AFTER_CALCULATE, new AfterCalculateEvent($this, $result));
 
         return $result;

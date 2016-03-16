@@ -2,9 +2,9 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Handler;
 
+use EsteIt\ShippingCalculator\Exception\ViolationException;
 use EsteIt\ShippingCalculator\Handler\AsendiaHandler;
 use EsteIt\ShippingCalculator\Handler\Asendia\ZoneCalculator;
-use EsteIt\ShippingCalculator\Model\CalculationResult;
 use EsteIt\ShippingCalculator\Result;
 
 /**
@@ -92,7 +92,7 @@ class AsendiaHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateSenderAddressException($calculatorOptions, $address)
     {
-        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
+        $this->setExpectedException(ViolationException::class, 'Can not send a package from this country.');
 
         $calculator = new AsendiaHandler($calculatorOptions);
         $calculator->validateSenderAddress($address);
@@ -103,7 +103,7 @@ class AsendiaHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateRecipientAddressException($calculatorOptions, $address)
     {
-        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
+        $this->setExpectedException(ViolationException::class, 'Can not send a package to this country.');
 
         $calculator = new AsendiaHandler($calculatorOptions);
         $calculator->validateRecipientAddress($address);
@@ -112,9 +112,9 @@ class AsendiaHandlerTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideValidateDimensionsException
      */
-    public function testValidateDimensionsException($exceptionClass, $exceptionMessage, $calculatorOptions, $package)
+    public function testValidateDimensionsException($exceptionMessage, $calculatorOptions, $package)
     {
-        $this->setExpectedException($exceptionClass, $exceptionMessage);
+        $this->setExpectedException(ViolationException::class, $exceptionMessage);
 
         $calculator = new AsendiaHandler($calculatorOptions);
         $calculator->validateDimensions($package);
@@ -122,7 +122,7 @@ class AsendiaHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testValidateWeightException()
     {
-        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', 'Sender country weight limit is exceeded.');
+        $this->setExpectedException(ViolationException::class, 'Sender country weight limit is exceeded.');
 
         $calculator = new AsendiaHandler([
             'zone_calculators' => [],
@@ -184,13 +184,11 @@ class AsendiaHandlerTest extends \PHPUnit_Framework_TestCase
 
         return [
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidDimensionsException',
                 'Side length limit is exceeded.',
                 $calculatorOptions,
                 $this->getFixture('package_2'),
             ],
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidDimensionsException',
                 'Girth limit is exceeded.',
                 $calculatorOptions,
                 $this->getFixture('package_1'),

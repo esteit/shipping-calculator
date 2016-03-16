@@ -3,20 +3,18 @@
 namespace EsteIt\ShippingCalculator\Handler;
 
 use EsteIt\ShippingCalculator\Address;
+use EsteIt\ShippingCalculator\Exception\ViolationException;
 use EsteIt\ShippingCalculator\Handler\Asendia\ZoneCalculator;
 use EsteIt\ShippingCalculator\Configuration\AsendiaConfiguration;
 use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
-use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
-use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
-use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
-use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use EsteIt\ShippingCalculator\Package;
 use EsteIt\ShippingCalculator\Result;
 use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\Tool\UspsGirthCalculator;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
 use EsteIt\ShippingCalculator\Model\ImportCountry;
+use EsteIt\ShippingCalculator\Violation;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
 use Moriony\Trivial\Converter\WeightConverter;
@@ -26,7 +24,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class AsendiaHandler implements HandlerInterface
+class AsendiaHandler implements HandlerInterface, ValidationHandlerInterface
 {
     /**
      * @var array
@@ -70,11 +68,11 @@ class AsendiaHandler implements HandlerInterface
                 'import_countries' => 'array',
                 'zone_calculators' => 'array',
                 'currency' => 'string',
-                'math' => 'Moriony\Trivial\Math\MathInterface',
-                'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'girth_calculator' => 'EsteIt\ShippingCalculator\Tool\UspsGirthCalculator',
-                'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
+                'math' => MathInterface::class,
+                'weight_converter' => UnitConverterInterface::class,
+                'length_converter' => UnitConverterInterface::class,
+                'girth_calculator' => UspsGirthCalculator::class,
+                'dimensions_normalizer' => DimensionsNormalizer::class,
             ]);
 
 
@@ -88,27 +86,60 @@ class AsendiaHandler implements HandlerInterface
     /**
      * @param Result $result
      * @param Package $package
+     */
+    public function validate(Result $result, Package $package)
+    {
+        try {
+            $this->validateSenderAddress($package->getSenderAddress());
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateRecipientAddress($package->getRecipientAddress());
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateDimensions($package);
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateWeight($package);
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+    }
+
+    /**
+     * @param Result $result
+     * @param Package $package
      * @return mixed
      */
     public function calculate(Result $result, Package $package)
     {
-        $this->validateSenderAddress($package->getSenderAddress());
-        $this->validateRecipientAddress($package->getRecipientAddress());
-        $this->validateDimensions($package);
-        $this->validateWeight($package);
+        $this->validate($result, $package);
 
-        $zoneCalculator = $this->getZoneCalculator($package);
+        if (!$result->hasViolations()) {
+            try {
+                $zoneCalculator = $this->getZoneCalculator($package);
 
-        $weight = $package->getWeight();
-        $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->get('mass_unit'));
+                $weight = $package->getWeight();
+                $weight = $this->getWeightConverter()->convert($weight->getValue(), $weight->getUnit(), $this->get('mass_unit'));
 
-        $math = $this->getMath();
-        $cost = $zoneCalculator->calculate($weight);
-        $wholeWeight = $math->roundUp($weight);
-        $fuelCost = $math->mul($wholeWeight, $this->get('fuel_subcharge'));
-        $total = $math->sum($cost, $fuelCost);
+                $cost = $zoneCalculator->calculate($weight);
+                $wholeWeight = $this->getMath()->roundUp($weight);
+                $fuelCost = $this->getMath()->mul($wholeWeight, $this->get('fuel_subcharge'));
+                $total = $this->getMath()->sum($cost, $fuelCost);
 
-        $result->set('shipping_cost', $total);
+                $result->set('shipping_cost', $total);
+            } catch (ViolationException $e) {
+                $result->addViolation(new Violation($e->getMessage()));
+            }
+        }
     }
 
     /**
@@ -119,7 +150,7 @@ class AsendiaHandler implements HandlerInterface
         try {
             $this->getExportCountry($address->getCountryCode());
         } catch (InvalidArgumentException $e) {
-            throw new InvalidSenderAddressException('Can not send a package from this country.');
+            throw new ViolationException('Can not send a package from this country.');
         }
     }
 
@@ -131,11 +162,11 @@ class AsendiaHandler implements HandlerInterface
         try {
             $importCountry = $this->getImportCountry($address->getCountryCode());
         } catch (InvalidArgumentException $e) {
-            throw new InvalidRecipientAddressException('Can not send a package to this country.');
+            throw new ViolationException('Can not send a package to this country.');
         }
 
         if (!array_key_exists($importCountry->getZone(), $this->get('zone_calculators'))) {
-            throw new InvalidRecipientAddressException('Can not send a package to this country.');
+            throw new ViolationException('Can not send a package to this country.');
         }
     }
 
@@ -151,13 +182,13 @@ class AsendiaHandler implements HandlerInterface
         $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
         $maximumDimension = $converter->convert($this->get('maximum_dimension'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $maximumDimension)) {
-            throw new InvalidDimensionsException('Side length limit is exceeded.');
+            throw new ViolationException('Side length limit is exceeded.');
         }
 
         $girth = $girthCalculator->calculate($dimensions);
         $maxGirth = $converter->convert($this->get('maximum_girth'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($girth->getValue(), $maxGirth)) {
-            throw new InvalidDimensionsException('Girth limit is exceeded.');
+            throw new ViolationException('Girth limit is exceeded.');
         }
     }
 
@@ -169,7 +200,7 @@ class AsendiaHandler implements HandlerInterface
 
         $countryMaxWeight = $converter->convert($country->getMaximumWeight(), $this->get('mass_unit'), $package->getWeight()->getUnit());
         if ($math->greaterThan($package->getWeight()->getValue(), $countryMaxWeight)) {
-            throw new InvalidWeightException('Sender country weight limit is exceeded.');
+            throw new ViolationException('Sender country weight limit is exceeded.');
         }
     }
 

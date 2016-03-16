@@ -4,16 +4,14 @@ namespace EsteIt\ShippingCalculator\Handler;
 
 use EsteIt\ShippingCalculator\Address;
 use EsteIt\ShippingCalculator\Configuration\IParcelConfiguration;
-use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
-use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
-use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
-use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
+use EsteIt\ShippingCalculator\Exception\ViolationException;
 use EsteIt\ShippingCalculator\Package;
 use EsteIt\ShippingCalculator\Result;
 use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
 use EsteIt\ShippingCalculator\Model\ImportCountry;
+use EsteIt\ShippingCalculator\Violation;
 use EsteIt\ShippingCalculator\VolumetricWeightCalculator\IParcelVolumetricWeightCalculator;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
@@ -24,7 +22,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class IParcelHandler implements HandlerInterface
+class IParcelHandler implements HandlerInterface, ValidationHandlerInterface
 {
     /**
      * @var array
@@ -72,12 +70,12 @@ class IParcelHandler implements HandlerInterface
                 'import_countries' => 'array',
                 'zones' => 'array',
                 'currency' => 'string',
-                'math' => 'Moriony\Trivial\Math\MathInterface',
-                'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'perimeter_calculator' => 'EsteIt\ShippingCalculator\Tool\MaximumPerimeterCalculator',
-                'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\IParcelVolumetricWeightCalculator',
-                'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
+                'math' => MathInterface::class,
+                'weight_converter' => UnitConverterInterface::class,
+                'length_converter' => UnitConverterInterface::class,
+                'perimeter_calculator' => MaximumPerimeterCalculator::class,
+                'volumetric_weight_calculator' => IParcelVolumetricWeightCalculator::class,
+                'dimensions_normalizer' => DimensionsNormalizer::class,
             ]);
 
 
@@ -88,6 +86,39 @@ class IParcelHandler implements HandlerInterface
         $this->options = $resolver->resolve($options);
     }
 
+    public function validate(Result $result, Package $package)
+    {
+        try {
+            $this->validateSenderAddress($package->getSenderAddress());
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateRecipientAddress($package->getRecipientAddress());
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateMaximumDimension($package);
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateMaximumPerimeter($package);
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateWeight($package);
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+    }
+
     /**
      * @param Result $result
      * @param Package $package
@@ -95,21 +126,22 @@ class IParcelHandler implements HandlerInterface
      */
     public function calculate(Result $result, Package $package)
     {
-        $this->validateSenderAddress($package->getSenderAddress());
-        $this->validateRecipientAddress($package->getRecipientAddress());
-        $this->validateMaximumDimension($package);
-        $this->validateMaximumPerimeter($package);
-        $this->validateWeight($package);
-        $price = $this->getPrice($package);
-
-        $result->set('shipping_cost', $price);
+        $this->validate($result, $package);
+        if (!$result->hasViolations()) {
+            try {
+                $price = $this->getPrice($package);
+                $result->set('shipping_cost', $price);
+            } catch (ViolationException $e) {
+                $result->addViolation(new Violation($e->getMessage()));
+            }
+        }
     }
 
     public function validateSenderAddress(Address $address)
     {
         $countries = $this->get('export_countries');
         if (!array_key_exists($address->getCountryCode(), $countries)) {
-            throw new InvalidSenderAddressException('Can not send a package from this country.');
+            throw new ViolationException('Can not send a package from this country.');
         }
     }
 
@@ -117,11 +149,11 @@ class IParcelHandler implements HandlerInterface
     {
         $importCountry = $this->detectImportCountry($address);
         if (is_null($importCountry)) {
-            throw new InvalidRecipientAddressException('Can not send a package to this country.');
+            throw new ViolationException('Can not send a package to this country.');
         }
 
         if (!array_key_exists($importCountry->getZone(), $this->get('zones'))) {
-            throw new InvalidRecipientAddressException('Can not send a package to this country.');
+            throw new ViolationException('Can not send a package to this country.');
         }
     }
 
@@ -130,7 +162,7 @@ class IParcelHandler implements HandlerInterface
         $dimensions = $this->getDimensionsNormalizer()->normalize($package->getDimensions());
         $maximumDimension = $this->getLengthConverter()->convert($this->get('maximum_dimension'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($this->getMath()->greaterThan($dimensions->getLength(), $maximumDimension)) {
-            throw new InvalidDimensionsException('Side length limit is exceeded.');
+            throw new ViolationException('Side length limit is exceeded.');
         }
     }
 
@@ -140,7 +172,7 @@ class IParcelHandler implements HandlerInterface
         $perimeter = $this->getPerimeterCalculator()->calculate($dimensions);
         $maxPerimeter = $this->getLengthConverter()->convert($this->get('maximum_perimeter'), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($this->getMath()->greaterThan($perimeter->getValue(), $maxPerimeter)) {
-            throw new InvalidDimensionsException('Maximum perimeter limit is exceeded.');
+            throw new ViolationException('Maximum perimeter limit is exceeded.');
         }
     }
 
@@ -151,12 +183,12 @@ class IParcelHandler implements HandlerInterface
         $weight = $package->getWeight();
         $math = $this->getMath();
         if ($math->lessThan($weight->getValue(), 0)) {
-            throw new InvalidWeightException('Weight should be greater than zero.');
+            throw new ViolationException('Weight should be greater than zero.');
         }
 
         $countryMaxWeight = $this->getWeightConverter()->convert($importCountry->getMaximumWeight(), $this->get('mass_unit'), $weight->getUnit());
         if ($this->getMath()->greaterThan($weight->getValue(), $countryMaxWeight)) {
-            throw new InvalidWeightException('Sender country weight limit is exceeded.');
+            throw new ViolationException('Sender country weight limit is exceeded.');
         }
     }
 
@@ -187,7 +219,7 @@ class IParcelHandler implements HandlerInterface
         }
 
         if (is_null($price)) {
-            throw new InvalidWeightException('Can not calculate shipping for this weight.');
+            throw new ViolationException('Can not calculate shipping for this weight.');
         }
 
         return $price;
@@ -319,7 +351,7 @@ class IParcelHandler implements HandlerInterface
                 'weight_prices',
             ])
             ->setAllowedTypes([
-                'math' => 'Moriony\Trivial\Math\MathInterface',
+                'math' => MathInterface::class,
                 'weight_prices' => 'array',
             ])
             ->setNormalizer('weight_prices', $this->createWeightPricesNormalizer());

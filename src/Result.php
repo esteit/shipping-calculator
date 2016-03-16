@@ -95,4 +95,12 @@ class Result
     {
         return $this->violations;
     }
+
+    /**
+     * @return bool
+     */
+    public function hasViolations()
+    {
+        return !empty($this->violations);
+    }
 }

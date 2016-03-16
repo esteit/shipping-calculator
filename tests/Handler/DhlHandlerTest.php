@@ -2,9 +2,9 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Handler;
 
+use EsteIt\ShippingCalculator\Exception\ViolationException;
 use EsteIt\ShippingCalculator\Handler\DhlHandler;
 use EsteIt\ShippingCalculator\Handler\Dhl\ZoneCalculator;
-use EsteIt\ShippingCalculator\Model\CalculationResult;
 use EsteIt\ShippingCalculator\Result;
 
 /**
@@ -55,7 +55,7 @@ class DhlHandlerTest extends \PHPUnit_Framework_TestCase
             'maximum_weight' => 60,
         ]);
 
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Handler\DhlHandler', $calculator);
+        $this->assertInstanceOf(DhlHandler::class, $calculator);
     }
 
     /**
@@ -93,7 +93,7 @@ class DhlHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateSenderAddressException($calculatorOptions, $address)
     {
-        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException', 'Can not send a package from this country.');
+        $this->setExpectedException(ViolationException::class, 'Can not send a package from this country.');
 
         $calculator = new DhlHandler($calculatorOptions);
         $calculator->validateSenderAddress($address);
@@ -104,7 +104,7 @@ class DhlHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateRecipientSenderAddressException($calculatorOptions, $address)
     {
-        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException', 'Can not send a package to this country.');
+        $this->setExpectedException(ViolationException::class, 'Can not send a package to this country.');
 
         $calculator = new DhlHandler($calculatorOptions);
         $calculator->validateRecipientAddress($address);
@@ -115,7 +115,7 @@ class DhlHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidateDimensionsException($exceptionMessage, $package)
     {
-        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidDimensionsException', $exceptionMessage);
+        $this->setExpectedException(ViolationException::class, $exceptionMessage);
 
         $calculator = new DhlHandler([
             'zone_calculators' => [],
@@ -131,7 +131,7 @@ class DhlHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testValidateWeightException()
     {
-        $this->setExpectedException('EsteIt\ShippingCalculator\Exception\InvalidWeightException', 'Sender country weight limit is exceeded.');
+        $this->setExpectedException(ViolationException::class, 'Sender country weight limit is exceeded.');
 
         $calculator = new DhlHandler([
             'zone_calculators' => [],

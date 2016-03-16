@@ -1,18 +1,18 @@
 <?php
 
 use EsteIt\ShippingCalculator\Calculator\BaseCalculator;
-use EsteIt\ShippingCalculator\CalculatorHandler\AramexCalculatorHandler;
-use EsteIt\ShippingCalculator\Model\Weight;
-use EsteIt\ShippingCalculator\Model\Dimensions;
-use EsteIt\ShippingCalculator\Model\Address;
-use EsteIt\ShippingCalculator\Model\Package;
+use EsteIt\ShippingCalculator\Handler\AramexHandler;
+use EsteIt\ShippingCalculator\Weight;
+use EsteIt\ShippingCalculator\Dimensions;
+use EsteIt\ShippingCalculator\Address;
+use EsteIt\ShippingCalculator\Package;
 
 include_once __DIR__.'/../vendor/autoload.php';
 
 $config = include __DIR__.'/../src/Resources/Aramex/tariff_2015_08_25_usa.php';
 
 $calculator = new BaseCalculator([
-    'handler' => AramexCalculatorHandler::create($config)
+    'handler' => AramexHandler::create($config)
 ]);
 
 $weight = new Weight();
@@ -39,5 +39,5 @@ $package->setRecipientAddress($recipientAddress);
 
 $result = $calculator->calculate($package);
 
-var_dump($result->getShippingCost());
+var_dump($result->getData());
 

@@ -4,19 +4,16 @@ namespace EsteIt\ShippingCalculator\Handler;
 
 use EsteIt\ShippingCalculator\Address;
 use EsteIt\ShippingCalculator\Dimensions;
+use EsteIt\ShippingCalculator\Exception\ViolationException;
 use EsteIt\ShippingCalculator\Handler\Dhl\ZoneCalculator;
 use EsteIt\ShippingCalculator\Configuration\DhlConfiguration;
-use EsteIt\ShippingCalculator\Exception\InvalidConfigurationException;
-use EsteIt\ShippingCalculator\Exception\InvalidDimensionsException;
-use EsteIt\ShippingCalculator\Exception\InvalidRecipientAddressException;
-use EsteIt\ShippingCalculator\Exception\InvalidSenderAddressException;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
-use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
 use EsteIt\ShippingCalculator\Model\ExportCountry;
 use EsteIt\ShippingCalculator\Model\ImportCountry;
 use EsteIt\ShippingCalculator\Package;
 use EsteIt\ShippingCalculator\Result;
 use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
+use EsteIt\ShippingCalculator\Violation;
 use EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\UnitConverterInterface;
@@ -27,7 +24,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class DhlHandler implements HandlerInterface
+class DhlHandler implements HandlerInterface, ValidationHandlerInterface
 {
     /**
      * @var array
@@ -71,11 +68,11 @@ class DhlHandler implements HandlerInterface
                 'import_countries' => 'array',
                 'zone_calculators' => 'array',
                 'currency' => 'string',
-                'math' => 'Moriony\Trivial\Math\MathInterface',
-                'weight_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'length_converter' => 'Moriony\Trivial\Converter\UnitConverterInterface',
-                'volumetric_weight_calculator' => 'EsteIt\ShippingCalculator\VolumetricWeightCalculator\DhlVolumetricWeightCalculator',
-                'dimensions_normalizer' => 'EsteIt\ShippingCalculator\Tool\DimensionsNormalizer',
+                'math' => MathInterface::class,
+                'weight_converter' => UnitConverterInterface::class,
+                'length_converter' => UnitConverterInterface::class,
+                'volumetric_weight_calculator' => DhlVolumetricWeightCalculator::class,
+                'dimensions_normalizer' => DimensionsNormalizer::class,
             ]);
 
         $resolver->setNormalizer('import_countries', $this->createImportCountriesNormalizer());
@@ -89,15 +86,41 @@ class DhlHandler implements HandlerInterface
     /**
      * @param Result $result
      * @param Package $package
+     */
+    public function validate(Result $result, Package $package)
+    {
+        try {
+            $this->validateSenderAddress($package->getSenderAddress());
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateRecipientAddress($package->getRecipientAddress());
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateDimensions($package);
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+
+        try {
+            $this->validateWeight($package);
+        } catch (ViolationException $e) {
+            $result->addViolation(new Violation($e->getMessage()));
+        }
+    }
+
+    /**
+     * @param Result $result
+     * @param Package $package
      * @return mixed
      */
     public function calculate(Result $result, Package $package)
     {
-        $this->validateSenderAddress($package->getSenderAddress());
-        $this->validateRecipientAddress($package->getRecipientAddress());
-        $this->validateDimensions($package);
-        $this->validateWeight($package);
-
         $weight = $package->getWeight();
         $volumetricWeight = $this->getVolumetricWeightCalculator()->calculate($package->getDimensions());
 
@@ -115,6 +138,7 @@ class DhlHandler implements HandlerInterface
         $result->set('shipping_cost', $total);
     }
 
+
     /**
      * @param Address $address
      */
@@ -123,7 +147,7 @@ class DhlHandler implements HandlerInterface
         try {
             $this->getExportCountry($address->getCountryCode());
         } catch (InvalidArgumentException $e) {
-            throw new InvalidSenderAddressException('Can not send a package from this country.');
+            throw new ViolationException('Can not send a package from this country.');
         }
     }
 
@@ -135,11 +159,11 @@ class DhlHandler implements HandlerInterface
         try {
             $importCountry = $this->getImportCountry($address->getCountryCode());
         } catch (InvalidArgumentException $e) {
-            throw new InvalidRecipientAddressException('Can not send a package to this country.');
+            throw new ViolationException('Can not send a package to this country.');
         }
 
         if (!array_key_exists($importCountry->getZone(), $this->get('zone_calculators'))) {
-            throw new InvalidRecipientAddressException('Can not send a package to this country.');
+            throw new ViolationException('Can not send a package to this country.');
         }
     }
 
@@ -157,7 +181,7 @@ class DhlHandler implements HandlerInterface
             || $math->lessOrEqualThan($dimensions->getWidth(), 0);
 
         if ($invalidDimensions) {
-            throw new InvalidDimensionsException('Dimensions must be greater than zero.');
+            throw new ViolationException('Dimensions must be greater than zero.');
         }
 
         $maxDimensions = $this->getDimensionsNormalizer()->normalize($this->get('maximum_dimensions'));
@@ -165,17 +189,17 @@ class DhlHandler implements HandlerInterface
 
         $maxLength = $converter->convert($maxDimensions->getLength(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getLength(), $maxLength)) {
-            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
+            throw new ViolationException('Dimensions limit is exceeded.');
         }
 
         $maxWidth = $converter->convert($maxDimensions->getWidth(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getWidth(), $maxWidth)) {
-            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
+            throw new ViolationException('Dimensions limit is exceeded.');
         }
 
         $maxHeight = $converter->convert($maxDimensions->getHeight(), $this->get('dimensions_unit'), $dimensions->getUnit());
         if ($math->greaterThan($dimensions->getHeight(), $maxHeight)) {
-            throw new InvalidDimensionsException('Dimensions limit is exceeded.');
+            throw new ViolationException('Dimensions limit is exceeded.');
         }
     }
 
@@ -186,7 +210,7 @@ class DhlHandler implements HandlerInterface
 
         $maxWeight = $converter->convert($this->get('maximum_weight'), $this->get('mass_unit'), $package->getWeight()->getUnit());
         if ($math->greaterThan($package->getWeight()->getValue(), $maxWeight)) {
-            throw new InvalidWeightException('Sender country weight limit is exceeded.');
+            throw new ViolationException('Sender country weight limit is exceeded.');
         }
     }
 
@@ -200,7 +224,7 @@ class DhlHandler implements HandlerInterface
 
         $calculators = $this->get('zone_calculators');
         if (!array_key_exists($country->getZone(), $calculators)) {
-            throw new InvalidConfigurationException('Price group does not exist.');
+            throw new ViolationException('Price group does not exist.');
         }
 
         return $calculators[$country->getZone()];
