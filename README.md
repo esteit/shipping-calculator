@@ -30,13 +30,13 @@ Example code below will create the calculator for a single shipment method.
 ```php
 $config = include __DIR__.'/../src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php';
 $calculator = new BaseCalculator([
-    'handler' => DhlCalculatorHandler::create($config)
+    'handler' => DhlHandler::create($config)
 ]);
 ```
 
 What is what:
 - [DhlCalculatorHandler](/src/Calculator/BaseCalculator.php) contains calculation algorithm for the Dhl Express Shipping Method;
-- [$config](/src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php) contains configuration for the `DhlCalculatorHandler`;
+- [$config](/src/Resources/DHL/ExportExpressWorldWide/tariff_2015_08_25_usa.php) contains configuration for the `DhlHandler`;
 - [BaseCalculator](/src/Calculator/BaseCalculator.php) is a wrapper for a calculation handlers, it contains an algorithm "How to use calculation handlers" and returns a calculation result;
 
 ### How to calculate a package shipping?
@@ -72,11 +72,11 @@ $result = $calculator->calculate($package);
 ```
 
 What is what:
-- [Weight](/src/Model/Weight.php) contains information about physical weight;
-- [Dimensions](/src/Model/Dimensions.php) contains information about package box dimensions. It is required to calculate a volumetric weight of your package;
-- [$senderAddress](/src/Model/Address.php) and [$recipientAddress](/src/Model/Address.php) contains information about sender and recipient;
-- [Package](/src/Model/Package.php) is a wrapper object to all objects above. You will need to pass this object to `calculate` method of your calculator;
-- [$result](/src/Model/CalculationResult.php) contains your package and resulting calculation data;
+- [Weight](/src/Weight.php) contains information about physical weight;
+- [Dimensions](/src/Dimensions.php) contains information about package box dimensions. It is required to calculate a volumetric weight of your package;
+- [$senderAddress](/src/Address.php) and [$recipientAddress](/src/Address.php) contains information about sender and recipient;
+- [Package](/src/Package.php) is a wrapper object to all objects above. You will need to pass this object to `calculate` method of your calculator;
+- [$result](/src/Result.php) contains your package and resulting calculation data;
 
 
 ### How to extend a calculator?
@@ -99,4 +99,3 @@ What is what:
 
 - create calculation handlers for other couriers and shipping methods;
 - create calculators and realize your own algorithms using handlers;
-- extend [models](/src/Model). For example i use it with [Doctrine ORM](https://github.com/doctrine/doctrine2) entities;
