@@ -1,18 +1,18 @@
 <?php
 
 use EsteIt\ShippingCalculator\Calculator\BaseCalculator;
-use EsteIt\ShippingCalculator\CalculatorHandler\IParcelCalculatorHandler;
-use EsteIt\ShippingCalculator\Model\Weight;
-use EsteIt\ShippingCalculator\Model\Dimensions;
-use EsteIt\ShippingCalculator\Model\Address;
-use EsteIt\ShippingCalculator\Model\Package;
+use EsteIt\ShippingCalculator\Handler\IParcelHandler;
+use EsteIt\ShippingCalculator\Weight;
+use EsteIt\ShippingCalculator\Dimensions;
+use EsteIt\ShippingCalculator\Address;
+use EsteIt\ShippingCalculator\Package;
 
 include_once __DIR__.'/../vendor/autoload.php';
 
 $config = include __DIR__.'/../src/Resources/IParcel/tariff_2015_01_12_usa.php';
 
 $calculator = new BaseCalculator([
-    'handler' => IParcelCalculatorHandler::create($config)
+    'handler' => IParcelHandler::create($config)
 ]);
 
 $weight = new Weight();
@@ -39,5 +39,5 @@ $package->setRecipientAddress($recipientAddress);
 
 $result = $calculator->calculate($package);
 
-var_dump($result->getShippingCost());
+var_dump($result->getData());
 

@@ -2,7 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Handler\Asendia;
 
-use EsteIt\ShippingCalculator\Exception\InvalidWeightException;
+use EsteIt\ShippingCalculator\Exception\ViolationException;
 use Moriony\Trivial\Math\MathInterface;
 use Moriony\Trivial\Math\NativeMath;
 use Symfony\Component\OptionsResolver\Options;
@@ -73,12 +73,12 @@ class ZoneCalculator
     public function calculate($weight)
     {
         if (!is_scalar($weight)) {
-            throw new InvalidWeightException('Weight should be a scalar value.');
+            throw new ViolationException('Weight should be a scalar value.');
         }
 
         $math = $this->getMath();
         if ($math->lessThan($weight, 0)) {
-            throw new InvalidWeightException('Weight should be greater than zero.');
+            throw new ViolationException('Weight should be greater than zero.');
         }
 
         $currentWeight = null;
@@ -93,7 +93,7 @@ class ZoneCalculator
         }
 
         if (is_null($price)) {
-            throw new InvalidWeightException('Can not calculate shipping for this weight.');
+            throw new ViolationException('Can not calculate shipping for this weight.');
         }
 
         return $price;
