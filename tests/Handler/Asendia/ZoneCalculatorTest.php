@@ -2,6 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Handler\Asendia;
 
+use EsteIt\ShippingCalculator\Exception\ViolationException;
 use EsteIt\ShippingCalculator\Handler\Asendia\ZoneCalculator;
 
 /**
@@ -49,9 +50,9 @@ class ZoneCalculatorTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideCalculateException
      */
-    public function testGetPriceException($exceptionClass, $exceptionMessage, $weight)
+    public function testGetPriceException($exceptionMessage, $weight)
     {
-        $this->setExpectedException($exceptionClass, $exceptionMessage);
+        $this->setExpectedException(ViolationException::class, $exceptionMessage);
         $this->zoneCalculator->calculate($weight);
     }
 
@@ -69,17 +70,14 @@ class ZoneCalculatorTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidWeightException',
                 'Weight should be a scalar value.',
                 array(),
             ],
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidWeightException',
                 'Can not calculate shipping for this weight.',
                 100,
             ],
             [
-                'EsteIt\ShippingCalculator\Exception\InvalidWeightException',
                 'Weight should be greater than zero.',
                 -10,
             ],
