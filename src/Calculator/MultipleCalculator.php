@@ -142,7 +142,7 @@ class MultipleCalculator implements CalculatorInterface
 
     /**
      * @param Package $package
-     * @return Result
+     * @return Result[]
      */
     public function calculate(Package $package)
     {
