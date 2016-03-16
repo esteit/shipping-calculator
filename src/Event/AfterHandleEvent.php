@@ -3,8 +3,8 @@
 namespace EsteIt\ShippingCalculator\Event;
 
 use EsteIt\ShippingCalculator\Calculator\CalculatorInterface;
-use EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface;
-use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
+use EsteIt\ShippingCalculator\Handler\HandlerInterface;
+use EsteIt\ShippingCalculator\Result;
 use Symfony\Component\EventDispatcher\Event;
 
 class AfterHandleEvent extends Event
@@ -15,21 +15,21 @@ class AfterHandleEvent extends Event
     protected $calculator;
 
     /**
-     * @var CalculatorHandlerInterface
+     * @var HandlerInterface
      */
     protected $handler;
 
     /**
-     * @var CalculationResultInterface
+     * @var Result
      */
     protected $result;
 
     /**
      * @param CalculatorInterface $calculator
-     * @param CalculatorHandlerInterface $handler
-     * @param CalculationResultInterface $result
+     * @param HandlerInterface $handler
+     * @param Result $result
      */
-    public function __construct(CalculatorInterface $calculator, CalculatorHandlerInterface $handler, CalculationResultInterface $result)
+    public function __construct(CalculatorInterface $calculator, HandlerInterface $handler, Result $result)
     {
         $this->calculator = $calculator;
         $this->handler = $handler;
@@ -45,7 +45,7 @@ class AfterHandleEvent extends Event
     }
 
     /**
-     * @return CalculatorHandlerInterface
+     * @return HandlerInterface
      */
     public function getHandler()
     {
@@ -53,7 +53,7 @@ class AfterHandleEvent extends Event
     }
 
     /**
-     * @return CalculationResultInterface
+     * @return Result
      */
     public function getResult()
     {

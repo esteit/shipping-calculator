@@ -2,8 +2,8 @@
 
 namespace EsteIt\ShippingCalculator\Tool;
 
-use EsteIt\ShippingCalculator\Model\DimensionsInterface;
-use EsteIt\ShippingCalculator\Model\Length;
+use EsteIt\ShippingCalculator\Dimensions;
+use EsteIt\ShippingCalculator\Length;
 use Moriony\Trivial\Math\MathInterface;
 
 class MaximumPerimeterCalculator
@@ -24,10 +24,10 @@ class MaximumPerimeterCalculator
     }
 
     /**
-     * @param DimensionsInterface $dimensions
+     * @param Dimensions $dimensions
      * @return Length
      */
-    public function calculate(DimensionsInterface $dimensions)
+    public function calculate(Dimensions $dimensions)
     {
         $dimensions = $this->dimensionsNormalizer->normalize($dimensions);
 

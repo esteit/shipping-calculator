@@ -2,8 +2,8 @@
 
 namespace EsteIt\ShippingCalculator\VolumetricWeightCalculator;
 
-use EsteIt\ShippingCalculator\Model\DimensionsInterface;
-use EsteIt\ShippingCalculator\Model\Weight;
+use EsteIt\ShippingCalculator\Dimensions;
+use EsteIt\ShippingCalculator\Weight;
 use Moriony\Trivial\Converter\LengthConverter;
 use Moriony\Trivial\Converter\WeightConverter;
 use Moriony\Trivial\Math\MathInterface;
@@ -41,10 +41,10 @@ class DhlVolumetricWeightCalculator implements VolumetricWeightCalculatorInterfa
     }
 
     /**
-     * @param DimensionsInterface $dimensions
+     * @param Dimensions $dimensions
      * @return mixed
      */
-    public function calculate(DimensionsInterface $dimensions)
+    public function calculate(Dimensions $dimensions)
     {
         $length = $this->lengthConverter->convert($dimensions->getLength(), $dimensions->getUnit(), LengthUnits::CM);
         $width = $this->lengthConverter->convert($dimensions->getWidth(), $dimensions->getUnit(), LengthUnits::CM);

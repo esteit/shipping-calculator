@@ -2,15 +2,16 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Calculator;
 
-use EsteIt\ShippingCalculator\Calculator\AbstractCalculator;
 use EsteIt\ShippingCalculator\Calculator\BaseCalculator;
-use EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface;
 use EsteIt\ShippingCalculator\Event\AfterCalculateEvent;
 use EsteIt\ShippingCalculator\Event\AfterHandleEvent;
 use EsteIt\ShippingCalculator\Event\BeforeCalculateEvent;
 use EsteIt\ShippingCalculator\Event\BeforeHandleEvent;
-use EsteIt\ShippingCalculator\Model\Package;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use EsteIt\ShippingCalculator\Exception\LogicException;
+use EsteIt\ShippingCalculator\Handler\HandlerInterface;
+use EsteIt\ShippingCalculator\Package;
+use EsteIt\ShippingCalculator\Result;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @group unit
@@ -19,7 +20,7 @@ class BaseCalculatorTest extends \PHPUnit_Framework_TestCase
 {
     public function testDispatchCall()
     {
-        $dispatcher = \Mockery::mock('Symfony\Component\EventDispatcher\EventDispatcherInterface')
+        $dispatcher = \Mockery::mock(EventDispatcherInterface::class)
             ->shouldReceive('dispatch')
             ->times(4)
             ->getMock();
@@ -28,7 +29,7 @@ class BaseCalculatorTest extends \PHPUnit_Framework_TestCase
             'handler' => $this->getCalculatorHandlerMock(),
             'dispatcher' => $dispatcher,
         ]);
-        $package = \Mockery::mock('EsteIt\ShippingCalculator\Model\PackageInterface');
+        $package = \Mockery::mock(Package::class);
         $calculator->setDispatcher($dispatcher);
         $calculator->calculate($package);
     }
@@ -43,7 +44,7 @@ class BaseCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $calculator->getDispatcher()->addListener('before_calculate', function ($e) use ($calculator, $package) {
             /** @var BeforeCalculateEvent $e */
-            $this->assertInstanceOf('EsteIt\ShippingCalculator\Event\BeforeCalculateEvent', $e);
+            $this->assertInstanceOf(BeforeCalculateEvent::class, $e);
             $this->assertSame($calculator, $e->getCalculator());
             $this->assertSame($package, $e->getPackage());
         });
@@ -61,11 +62,11 @@ class BaseCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $calculator->getDispatcher()->addListener('after_calculate', function ($e) use ($calculator, $package) {
             /** @var AfterCalculateEvent $e */
-            $this->assertInstanceOf('EsteIt\ShippingCalculator\Event\AfterCalculateEvent', $e);
-            $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $e->getResult());
+            $this->assertInstanceOf(AfterCalculateEvent::class, $e);
+            $this->assertInstanceOf(Result::class, $e->getResult());
             $this->assertSame($package, $e->getResult()->getPackage());
             $this->assertSame($calculator, $e->getCalculator());
-            $this->assertNull($e->getResult()->getError());
+            $this->assertEmpty($e->getResult()->getViolations());
         });
 
         $calculator->calculate($package);
@@ -81,7 +82,7 @@ class BaseCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $calculator->getDispatcher()->addListener('before_handle', function ($e) use ($calculator, $package) {
             /** @var BeforeHandleEvent $e */
-            $this->assertInstanceOf('EsteIt\ShippingCalculator\Event\BeforeHandleEvent', $e);
+            $this->assertInstanceOf(BeforeHandleEvent::class, $e);
             $this->assertSame($calculator, $e->getCalculator());
             $this->assertSame($calculator->getHandler(), $e->getHandler());
             $this->assertSame($package, $e->getPackage());
@@ -100,42 +101,23 @@ class BaseCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $calculator->getDispatcher()->addListener('after_handle', function ($e) use ($calculator, $package) {
             /** @var AfterHandleEvent $e */
-            $this->assertInstanceOf('EsteIt\ShippingCalculator\Event\AfterHandleEvent', $e);
+            $this->assertInstanceOf(AfterHandleEvent::class, $e);
             $this->assertSame($calculator, $e->getCalculator());
             $this->assertSame($calculator->getHandler(), $e->getHandler());
-            $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $e->getResult());
+            $this->assertInstanceOf(Result::class, $e->getResult());
         });
 
         $calculator->calculate($package);
-    }
-
-    public function testExpectedException()
-    {
-        $handler = \Mockery::mock('EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface[visit]')
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('visit')
-            ->andThrow('EsteIt\ShippingCalculator\Exception\LogicException')
-            ->getMock();
-
-        $calculator = new BaseCalculator([
-            'handler' => $handler,
-        ]);
-
-        $result = $calculator->calculate(new Package());
-
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Model\CalculationResultInterface', $result);
-        $this->assertInstanceOf('EsteIt\ShippingCalculator\Exception\BasicExceptionInterface', $result->getError());
     }
 
     public function testUnexpectedException()
     {
         $this->setExpectedException('Exception');
 
-        $handler = \Mockery::mock('EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface[visit]')
+        $handler = \Mockery::mock(HandlerInterface::class.'[visit]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('visit')
+            ->shouldReceive('calculate')
             ->andThrow('Exception')
             ->getMock();
 
@@ -147,14 +129,14 @@ class BaseCalculatorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Mockery\MockInterface|CalculatorHandlerInterface
+     * @return \Mockery\MockInterface|HandlerInterface
      */
     public function getCalculatorHandlerMock()
     {
-        return \Mockery::mock('EsteIt\ShippingCalculator\CalculatorHandler\CalculatorHandlerInterface[visit]')
+        return \Mockery::mock(HandlerInterface::class.'[visit]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('visit')
+            ->shouldReceive('calculate')
             ->getMock();
     }
 }

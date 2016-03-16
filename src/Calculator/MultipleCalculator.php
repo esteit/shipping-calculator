@@ -2,10 +2,10 @@
 
 namespace EsteIt\ShippingCalculator\Calculator;
 
-use EsteIt\ShippingCalculator\Handler\HandlerInterface;
 use EsteIt\ShippingCalculator\Event\AfterHandleEvent;
 use EsteIt\ShippingCalculator\Event\BeforeHandleEvent;
 use EsteIt\ShippingCalculator\Exception\InvalidArgumentException;
+use EsteIt\ShippingCalculator\Handler\HandlerInterface;
 use EsteIt\ShippingCalculator\Event\AfterCalculateEvent;
 use EsteIt\ShippingCalculator\Event\BeforeCalculateEvent;
 use EsteIt\ShippingCalculator\Event\Events;
@@ -15,23 +15,27 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class BaseCalculator implements CalculatorInterface
+/**
+ * Class MultipleCalculator
+ */
+class MultipleCalculator implements CalculatorInterface
 {
     /**
      * @var EventDispatcherInterface
      */
     protected $dispatcher;
-
     /**
-     * @var HandlerInterface
+     * @var HandlerInterface[]
      */
-    protected $handler;
-
+    protected $handlers = [];
     /**
      * @var string
      */
     protected $resultClass;
 
+    /**
+     * @param array $options
+     */
     public function __construct(array $options)
     {
         $resolver = new OptionsResolver();
@@ -42,19 +46,17 @@ class BaseCalculator implements CalculatorInterface
             ])
             ->setRequired([
                 'dispatcher',
-                'handler',
+                'handlers',
             ])
             ->setAllowedTypes([
                 'dispatcher' => EventDispatcherInterface::class,
                 'result_class' => 'string',
-                'handler' => HandlerInterface::class,
+                'handlers' => 'array',
             ]);
-
         $options = $resolver->resolve($options);
-
         $this->setDispatcher($options['dispatcher']);
         $this->setResultClass($options['result_class']);
-        $this->setHandler($options['handler']);
+        $this->setHandlers($options['handlers']);
     }
 
     /**
@@ -97,28 +99,45 @@ class BaseCalculator implements CalculatorInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getResultClass()
     {
         return $this->resultClass;
     }
 
     /**
-     * @param HandlerInterface $handler
+     * @param HandlerInterface[] $handlers
      * @return $this
      */
-    public function setHandler(HandlerInterface $handler)
+    public function setHandlers(array $handlers)
     {
-        $this->handler = $handler;
+        $this->handlers = [];
+        foreach ($handlers as $handler) {
+            $this->addHandler($handler);
+        }
 
         return $this;
     }
 
     /**
-     * @return HandlerInterface
+     * @param HandlerInterface $handler
+     * @return $this
      */
-    public function getHandler()
+    public function addHandler(HandlerInterface $handler)
     {
-        return $this->handler;
+        $this->handlers[] = $handler;
+
+        return $this;
+    }
+
+    /**
+     * @return HandlerInterface[]
+     */
+    public function getHandlers()
+    {
+        return $this->handlers;
     }
 
     /**
@@ -128,14 +147,20 @@ class BaseCalculator implements CalculatorInterface
     public function calculate(Package $package)
     {
         $this->getDispatcher()->dispatch(Events::BEFORE_CALCULATE, new BeforeCalculateEvent($this, $package));
-        $result = $this->createResult();
-        $result->setPackage($package);
-        $this->getDispatcher()->dispatch(Events::BEFORE_HANDLE, new BeforeHandleEvent($this, $this->getHandler(), $package));
-        $this->getHandler()->calculate($result, $package);
-        $this->getDispatcher()->dispatch(Events::AFTER_HANDLE, new AfterHandleEvent($this, $this->getHandler(), $result));
-        $this->getDispatcher()->dispatch(Events::AFTER_CALCULATE, new AfterCalculateEvent($this, $result));
 
-        return $result;
+        $results = [];
+
+        foreach ($this->getHandlers() as $handler) {
+            $result = $this->createResult();
+            $result->setPackage($package);
+            $this->getDispatcher()->dispatch(Events::BEFORE_HANDLE, new BeforeHandleEvent($this, $handler, $package));
+            $handler->calculate($result, $package);
+            $this->getDispatcher()->dispatch(Events::AFTER_HANDLE, new AfterHandleEvent($this, $handler, $result));
+            $this->getDispatcher()->dispatch(Events::AFTER_CALCULATE, new AfterCalculateEvent($this, $result));
+            $results[] = $result;
+        }
+
+        return $results;
     }
 
     /**
@@ -144,6 +169,7 @@ class BaseCalculator implements CalculatorInterface
     protected function createResult()
     {
         $resultClass = $this->getResultClass();
-        return new $resultClass;
+
+        return new $resultClass();
     }
 }

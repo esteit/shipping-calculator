@@ -1,4 +1,4 @@
-EsteIt\ShippingCalculator\Model\Dimensions:
+EsteIt\ShippingCalculator\Dimensions:
   dimensions_100_100_100_cm:
     length: 100
     width: 100

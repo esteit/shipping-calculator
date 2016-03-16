@@ -2,7 +2,7 @@
 
 namespace EsteIt\ShippingCalculator\Tests\Tool;
 
-use EsteIt\ShippingCalculator\Model\DimensionsInterface;
+use EsteIt\ShippingCalculator\Dimensions;
 use EsteIt\ShippingCalculator\Tool\DimensionsNormalizer;
 use Moriony\Trivial\Math\NativeMath;
 
@@ -30,7 +30,7 @@ class DimensionsNormalizerTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider provideDimensions
      */
-    public function testNormalize(DimensionsInterface $dimensions)
+    public function testNormalize(Dimensions $dimensions)
     {
         $math = new NativeMath();
         $normalizer = new DimensionsNormalizer($math);

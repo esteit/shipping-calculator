@@ -3,13 +3,13 @@
 namespace EsteIt\ShippingCalculator\Event;
 
 use EsteIt\ShippingCalculator\Calculator\CalculatorInterface;
-use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
+use EsteIt\ShippingCalculator\Result;
 use Symfony\Component\EventDispatcher\Event;
 
 class AfterCalculateEvent extends Event
 {
     /**
-     * @var CalculationResultInterface
+     * @var Result
      */
     protected $result;
     /**
@@ -19,16 +19,16 @@ class AfterCalculateEvent extends Event
 
     /**
      * @param CalculatorInterface $calculator
-     * @param CalculationResultInterface $result
+     * @param Result $result
      */
-    public function __construct(CalculatorInterface $calculator, CalculationResultInterface $result)
+    public function __construct(CalculatorInterface $calculator, Result $result)
     {
         $this->result = $result;
         $this->calculator = $calculator;
     }
 
     /**
-     * @return CalculationResultInterface
+     * @return Result
      */
     public function getResult()
     {

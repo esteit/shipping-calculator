@@ -2,14 +2,14 @@
 
 namespace EsteIt\ShippingCalculator\Calculator;
 
-use EsteIt\ShippingCalculator\Model\CalculationResultInterface;
-use EsteIt\ShippingCalculator\Model\PackageInterface;
+use EsteIt\ShippingCalculator\Package;
+use EsteIt\ShippingCalculator\Result;
 
 interface CalculatorInterface
 {
     /**
-     * @param PackageInterface $package
-     * @return CalculationResultInterface
+     * @param Package $package
+     * @return Result
      */
-    public function calculate(PackageInterface $package);
+    public function calculate(Package $package);
 }
