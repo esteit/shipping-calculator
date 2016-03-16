@@ -97,10 +97,25 @@ class Result
     }
 
     /**
+     * @param string[]|string|null $levels
      * @return bool
      */
-    public function hasViolations()
+    public function hasViolations($levels = null)
     {
-        return !empty($this->violations);
+        if (is_null($levels)) {
+            return !empty($this->violations);
+        }
+
+        if (!is_array($levels)) {
+            $levels = [$levels];
+        }
+
+        foreach ($this->violations as $violation) {
+            if (in_array($violation->getLevel(), $levels)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
